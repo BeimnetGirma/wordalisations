@@ -1,34 +1,36 @@
-# TwelveGPT Educational
+# GPT Educational
 
 ## Description
 
-TwelveGPT Educational is a basic retrieval augmented chatbot for making reports about data.
-The system is set up in a general way, to allow users to build bots which talk about data. 
+GPT Educational is a basic retrieval-augmented chatbot framework designed to generate detailed reports about data. The system is built to provide users with the flexibility to create bots that can effectively discuss and interpret data in various contexts.
 
-The football scout botdisplays a distribution plot regarding football player's performance in various metrics. It then starts a chat giving an AI generated summary of the player's performance and asks a variety of questions about the player. 
+This repository contains three applications: the Football Scout application, the Personality GPT application, and the International Survey application.
 
-This is **not** the Twelve GPT product, but rather a (very) stripped down version of our code 
-to help people who would like to learn how to build bots to talk about football data. There are lots of things which Twelve GPT can do, which TwelveGPT Educational cannot do. But we want more people to learn about the methods we use and to do this **TwelveGPT Educational** is an excellent alternative. We have thus used the the GNU GPL license which requires that all the released improved versions are also be free software. This will allow us to learn from each other in developing better 
+The Football Scout application presents a bot that can describe players who played as strikers for at least 300 minutes in the Premier League during the 2017-18 season. The application allows users to obtain descriptions of these players compared to others based on several performance metrics and provides the ability to ask specific questions about individual players.
 
-If you work for a footballing organisation and would like to see a demo of the full Twelve GPT product then please email us at hello@twelve.football.
+The Personality GPT application focuses on personality test data, generating "wordalisations" that describe individuals based on their answers to a personality test.
 
-The design and code for this project was by Matthias Green, David Sumpter and Ágúst Pálmason Morthens. 
+The International Survey application generates detailed reports about countries based on data derived from the World Value Survey (WVS). It illustrates the wordalisation method by comparing a country's scores across six social factors to their relative positions within the global distribution of scores. The app, implemented within the GPT Educational framework, serves as an example to guide others in building similar tools.
 
 ## Usage
 
-This application was made with Streamlit.  To run locally, first create .streamlit/secrets.toml with keys, etc... then run:
+This application was made with Streamlit. To run locally, first create .streamlit/secrets.toml with keys, etc... then run:
+
 ```bash
 conda create --name streamlit_env
 conda activate streamlit_env
 pip install -r requirements.txt
 streamlit run app.py
 ```
-Once you have made changes to the code, save, move focus to the streamlit tab, then press c to clear caches if necessary, then r to rerun. 
+
+Once you have made changes to the code, save, move focus to the streamlit tab, then press c to clear caches if necessary, then r to rerun.
 
 You also need to have access to GPT API to use this package. Alternatively, you need access to Gemini API but that requires changes to the [.streamlit/secrets.toml](.streamlit/secrets.toml) file (see below).
 
 ## How does it work?
+
 ### App
+
 Streamlit reruns the code every time the user interacts with the app. This code is located in app.py. The user selects a player and the visual and word report starts to generate.
 
 The application builds primarily around five classes: data_sources, visual, description, chat and embeddings. We now describe these in turn.
@@ -58,7 +60,7 @@ It is in this part of the code where we start doing something novel. The three m
 **synthesize_text()**: This converts the stats.df to a description in words of what the data says.
 **get_prompt_messages()**: This is the prompt which tells GPT3 or GPT4 how to use the texts supplied.
 
-A key to success of prompting lies in two types of files, known as describe and gpt_example files. These are given for this application in 
+A key to success of prompting lies in two types of files, known as describe and gpt_example files. These are given for this application in
 data/describe/Forward
 and
 data/gpt_examples/Forward
@@ -73,16 +75,16 @@ The key function here is **handle_input(input)** which puts together a query com
 
 1, An instruction for the bot, which set up by **instruction_messages()**.
 2, The previous conversation
-3, And relevant information about the player and for answering the questuon, from  **get_relevant_info(input)**.
+3, And relevant information about the player and for answering the questuon, from **get_relevant_info(input)**.
 
-The get_relevant_info(input) both retrieves the synthesize_text() from the description and searches a library of embedded questions to find relevant info. To do this the input is embedded in order to search the database of embedded questions for relevant entries. 
+The get_relevant_info(input) both retrieves the synthesize_text() from the description and searches a library of embedded questions to find relevant info. To do this the input is embedded in order to search the database of embedded questions for relevant entries.
 
 ### Embeddings
 
 Certain files in /data/describe/ contain question-answer pairs that are embedded by pages/embedder.py. You can run this app by clicking on 'Embedding Tool' in top left corner of the app. This is then used to search (using cosine similarity) for the best question-answer pairs for answering the users query.
 
-
 ### Using Open AI API
+
 To use Open AI you need a API key. Then you need to add the following lines to your [.streamlit/secrets.toml](.streamlit/secrets.toml) file.
 
 ```toml
@@ -94,6 +96,7 @@ GPT_ENGINE = "model name"
 ```
 
 ### Using Gemini API
+
 If, instead of using OpenAI's API, you want to use Google's. You need to add the following lines to your [.streamlit/secrets.toml](.streamlit/secrets.toml) file.
 
 ```toml
