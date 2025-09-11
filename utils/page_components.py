@@ -24,7 +24,7 @@ def insert_local_css():
     logo_url = (
         "url(data:image/png;base64,"
         + base64.b64encode(
-            Path("data/ressources/img/twelve_logo_light.png").read_bytes()
+            Path("data/ressources/img/logo_mini.png").read_bytes()
         ).decode()
         + ")"
     )
@@ -42,12 +42,24 @@ def insert_local_css():
         ).decode()
         + ")"
     )
+    bg_url = (
+        "url(data:image/png;base64,"
+        + base64.b64encode(
+            Path("data/ressources/img/neural_network.png").read_bytes()
+        ).decode()
+        + ")"
+    )
 
+    css = css.replace("replace_bg_url", bg_url)
     css = css.replace("replace_logo_url", logo_url)
     css = css.replace("replace_font_url_medium", font_url_medium)
     css = css.replace("replace_font_url_light", font_url_light)
 
+
+
     st.markdown(f"<style>{css}</style>", unsafe_allow_html=True)
+
+
 
 
 def set_page_config():
@@ -56,8 +68,8 @@ def set_page_config():
     """
     st.set_page_config(
         layout="centered",
-        page_title="TwelveGPT Scout",
-        page_icon="data/ressources/img/TwelveEdu.png",
+        page_title="Wordalisation",
+        page_icon="data/ressources/img/logo_mini.png",
         initial_sidebar_state="expanded",
         menu_items={
             "Report a bug": "mailto:matthias@twelve.football?subject=Bug report"
@@ -66,7 +78,7 @@ def set_page_config():
 
 
 def add_page_selector():
-    # st.image("data/ressources/img/TwelveEdu.png")
+    st.image("data/ressources/img/logo_white.png")
     # st.page_link("pages/about.py", label="About")
     st.page_link("pages/football_scout.py", label="Football Scout")
     st.page_link("pages/embedder.py", label="Embdedding Tool")
