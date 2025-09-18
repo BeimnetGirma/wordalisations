@@ -85,7 +85,7 @@ def add_page_selector():
     # st.page_link("pages/wvs_chat.py", label="World Value Survey")
     # st.page_link("pages/personality_test.py", label="Personality Test")
     # st.page_link("pages/own_page.py", label="Your Own Page")
-    st.page_link("app.py", label="Evaluation")
+    st.write("### Evaluation")
     # st.page_link("pages/generate-evaluation.py", label="Generate Eval Data")
 
     # st.image("data/ressources/img/TwelveEdu.png")
