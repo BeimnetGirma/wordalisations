@@ -20,22 +20,26 @@ sidebar_container = st.sidebar.container()
 
 st.divider()
 
-displaytext = """## About GPT Educational """
+displaytext = """## About Wordalisation """
 
 st.markdown(displaytext)
 
 displaytext = (
    """
-   GPT Educational is a basic retrieval-augmented chatbot framework designed to generate detailed reports about data. The system is built to provide users with the flexibility to create bots that can effectively discuss and interpret data in various contexts.
+   This platform serves as a demo for Wordalisation, a context engineering approach for representing data in words.
 
-This repository contains three applications: the Football Scout application, the Personality GPT application, and the International Survey application.
+The context engineering flow was first presented in the paper [Representing Data in Words](https://arxiv.org/abs/2503.15509).
 
-The Football Scout application presents a bot that can describe players who played as strikers for at least 300 minutes in the Premier League during the 2017-18 season. The application allows users to obtain descriptions of these players compared to others based on several performance metrics and provides the ability to ask specific questions about individual players. 
+This demo builds on the work of the Twelve team (https://github.com/soccermatics/twelve-gpt-educational
+) and showcases three example applications:
 
-The Personality GPT application focuses on personality test data, generating "wordalisations" that describe individuals based on their answers to a personality test. 
+Football Scout Chat – describes players who played as strikers for at least 300 minutes in the 2017–18 Premier League season. Users can explore player performance metrics, compare players, and ask specific questions.
 
-The International Survey application generates detailed reports about countries based on data derived from the World Value Survey (WVS). It illustrates the wordalisation method by comparing a country's scores across six social factors to their relative positions within the global distribution of scores. The app, implemented within the GPT Educational framework, serves as an example to guide others in building similar tools. 
+Personality Chat– generates wordalisations that describe individuals based on their personality test results.
 
+International Survey Chat – produces detailed wordalisations about countries using World Values Survey (WVS) data, comparing each country’s scores across six social factors to their relative global distributions.
+
+These examples illustrate how Wordalisation can turn numerical and structured data into rich, human-readable narratives across diverse domains.
 ## Usage
 
 This application was made with Streamlit.  To run locally, first create .streamlit/secrets.toml with keys, etc... then run:
@@ -49,9 +53,13 @@ Once you have made changes to the code, save, move focus to the streamlit tab, t
 
 You also need to have access to GPT API to use this package. Alternatively, you need access to Gemini API but that requires changes to the [.streamlit/secrets.toml](.streamlit/secrets.toml) file (see below).
 
+
+Or, if you prefer not to set up the platform locally, you can use the already deployed version of the app on Streamlit Cloud, available here:
+https://wordalisations-sn.streamlit.app/
+
 ## How does it work?
 ### App
-Streamlit reruns the code every time the user interacts with the app. This code is located in app.py. The user selects a player and the visual and word report starts to generate.
+Streamlit reruns the code every time the user interacts with the app. The entry point of the app is app.py. From the side bar of the app, the user selects one of the 3 demo chat applications: Football Scout, Personality Chat, or International Survey Chat. The user then selects an entity (a football player, a country or a person) and the visual and word report are generated for that entity. The user can then ask questions about the entity and the bot will answer them.
 
 The application builds primarily around five classes: data_sources, visual, description, chat and embeddings. We now describe these in turn.
 

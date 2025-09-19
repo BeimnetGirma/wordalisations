@@ -82,13 +82,11 @@ div[data-testid="stSidebarUserContent"] div[data-testid="stLinkButton"]>a>div>p 
     font-weight: 600;
 }
 
-/* Dropdowns */
+/* Dropdown menu */
 
-ul[data-testid="stVirtualDropdown"]>div>div>li[aria-selected="true"] {
-    background: #009f66;
+ul[data-testid="stVirtualDropdown"] > div > div > li[aria-selected="true"] { 
+    background: linear-gradient(to right, #dc6d51, #f8de84);
 }
-
-
 
 
 /* keep dropdown container backgrounds white (kept from original file) */
@@ -112,7 +110,7 @@ button[data-testid="baseButton-header"] {
     color: rgb(255, 255, 255);
 }
 
-
+/* rest of your original styles preserved below */
 section[tabindex="0"]>div[data-testid="stAppViewBlockContainer"] {
     max-width: 70rem;
 }
@@ -239,4 +237,17 @@ button[data-testid="baseButton-primary"] {
     background-color: white;
     border-color: darkgrey;
     left: 3.2rem;
+}
+
+/* Sidebar Gradient Background */
+[data-testid="stSidebar"] {
+    /* If you want only an image */
+    background:replace_bg_url; 
+    background-size: cover;   /* scale image to cover sidebar */
+    background-repeat: no-repeat;
+    color: white;
+}
+
+div[data-testid="stSidebar"] * {
+    color: white !important; /* ensure text stays visible */
 }
