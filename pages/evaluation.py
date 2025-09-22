@@ -66,8 +66,8 @@ def show_entity_plots(entity_type, entity_name, metrics):
     visual_radar = RadarPlot(entity, metrics)
 
     col1, col2 = st.columns(2)
-    with col1: visual_radar.show()
-    with col2: visual_distribution.show()
+    with col1: visual_distribution.show()
+    with col2: visual_radar.show()
 
 
 def vote_question(key, question, options, number=None):
