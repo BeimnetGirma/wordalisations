@@ -284,7 +284,7 @@ def show_evaluation():
         vote_question("usefulness", usefulness_q, 
                       ["Very unuseful", "Unuseful", "Useful", "Very useful"], 3)
 
-        vote_question("hallucination", "Does the text contain hallucinations (unsupported claims)?", ["No", "Yes"], 4)
+        vote_question("hallucination", "Does the text contain hallucinations (claims not supported by the figures above)?", ["No", "Yes"], 4)
 
         
 
