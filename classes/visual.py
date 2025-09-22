@@ -23,7 +23,17 @@ def hex_to_rgb(hex_color: str) -> tuple:
 def rgb_to_color(rgb_color: tuple, opacity=1):
     return f"rgba{(*rgb_color, opacity)}"
 
-
+def wrap_text(text, max_len=15):
+    words = text.split()
+    wrapped_text = ""
+    current_len = 0
+    for word in words:
+        if current_len + len(word) > max_len:
+            wrapped_text += "<br>"
+            current_len = 0
+        wrapped_text += word + " "
+        current_len += len(word) + 1
+    return wrapped_text.strip()
 
 class DistributionPlot:
     def __init__(self, dataframe, entity, metrics, *args, **kwargs):
@@ -41,7 +51,6 @@ class DistributionPlot:
         st.plotly_chart(
             self.fig,
             config={"displayModeBar": False},
-            height=300,
             use_container_width=True,
         )
 
@@ -49,9 +58,6 @@ class DistributionPlot:
         self.fig.update_xaxes(
             range=[-4, 4],
             fixedrange=True,
-            #tickmode="array",
-            #tickvals=[-3, 0, 3],
-            #ticktext=["Worse", "Average", "Better"],
             showgrid=False,
             gridcolor=rgb_to_color(hex_to_rgb("#6a5acd"), 0.7),
         )
@@ -78,19 +84,19 @@ class DistributionPlot:
             rows=len(self.cols),
             cols=1,
             shared_xaxes=True,  # Keep the same scale for all
-            subplot_titles=[f"<b>{col}</b>" for col in self.cols],
-            vertical_spacing=0.08
+            vertical_spacing=0.0
         )
 
         for i, col in enumerate(dataframe.columns):
             self.fig.add_trace(
                 go.Violin(
                     x=dataframe[col].tolist(),
-                    #nbinsx=20,
-                    name=self.cols[i],
+                    name = self.cols[i],
+                    #name=wrap_text(self.cols[i]),
                     marker=dict(color=colors[i % len(colors)]),
                     opacity=0.65,
                     side='positive',
+                    showlegend = False,
                     hovertemplate=f"<b>{self.cols[i]}</b><br>Value: %{{x}}<br>Count: %{{y}}<extra></extra>"
                 ),
                 row=i+1,
@@ -103,93 +109,49 @@ class DistributionPlot:
                 go.Scatter(
                     x=[entity_value],
                     y=[self.cols[i]],
-                    mode="markers+text",
-                    marker=dict(symbol="diamond", size=10, color="#9340ff"),
-                    text=["Selected entity"],
-                    textposition="top center",
-                    showlegend=False,
+                    mode="markers", # if we want marker and text do "markers+text"
+                    marker=dict(symbol="diamond", size=6, color="#9340ff"),
+                    name="Selected entity",  # this will appear in the legend
+                    showlegend=(i == 0),  # ensures legend is shown
                     hovertemplate=f"<b>{self.cols[i]}</b><br>Value: %{{x}}<br>Rank: %{{customdata}}<extra></extra>",
                     customdata=[round(float(df_entity_rank.iloc[i]))]
-                ),
-                row=i+1,
-                col=1
-                )
+                
+                    ),
+                    row=i+1,
+                    col=1
+                    )
+
 
         # Update layout
         self.fig.update_layout(
             template="plotly_white",
-            height=500,
-            title=dict(text="<b>Distribution of Metrics</b>", x=0.5, font=dict(size=18)),
-            showlegend=False,
-            margin=dict(t=60, b=50, l=60, r=30),
+            title=dict(text="<b>Distribution of Metrics</b>",x=0.55, font=dict(size=14)),
+            showlegend=True,
+            margin=dict(t=50, b=50, l=45, r=25),
+            font = dict(size=14),
+            autosize=True,
+            legend=dict(
+                yanchor="bottom",
+                y=-0.2,
+                xanchor="right",
+                x=1,
+                font=dict(size=10)
+            )
         )
 
+    
         # Add grid & font styling
         self.fig.update_xaxes(showgrid=True, gridcolor="rgba(200,200,200,0.3)")
         self.fig.update_yaxes(showgrid=False)
 
-        # Consistent font
-        self.fig.update_layout(font=dict(size=14))
-
-
-    
-    
-
-        
-
-    
-    def set_visualization2(self):
-        dataframe = self.dataframe.iloc[:, -2*len(self.cols):-len(self.cols)]
-        df_entity = self.entity.iloc[-2*len(self.cols):-len(self.cols)]
-        df_entity_rank = self.entity.iloc[-len(self.cols):]
-        
-        
-        for i, col in enumerate(dataframe.columns):
-            self.fig.add_trace(go.Histogram(
-                x=dataframe[col],
-                name=self.cols[i],
-                orientation='v',
-                # Histograms use 'nbinsx' or 'nbinsy' to control the number of bins
-                nbinsx=20, 
-                hovertemplate=f"<b>{self.cols[i]}</b><br>Range: %{{y}}<br>Count: %{{x}}<extra></extra>",
-                ))
-        
-
-        self.fig.update_layout(barmode='overlay')
-        self.fig.update_traces(opacity=0.75)
-
-        # Add entity markers
-        for i, (col, value) in enumerate(df_entity.items()):
-
-            self.fig.add_trace(
-                go.Scatter(
-                    x=[value],
-                    y=[self.cols[i]],
-                    mode="markers",
-                    marker=dict(
-                        symbol="diamond-open",
-                        size=10,
-                        color="#9340ff",
-                    ),
-                    showlegend=True,
-                    name=f"Selected Entity: {self.cols[i]}",
-                    hovertemplate=f"<b>{self.cols[i]}</b><br>Value: %{{x}}<br>Rank: %{{customdata}}<extra></extra>",
-                    customdata=[round(df_entity_rank.iloc[i])],
-                )
-            )
-     
 
 
 
 class RadarPlot:
     def __init__(self, entity, metrics, *args, **kwargs):
 
-        #print("creating visualization")
         self.cols = metrics
         self.entity = entity.ser_metrics
-
-
-        self.background =  hex_to_rgb("#faf9ed")
         self.color = hex_to_rgb("#faf9ed")
         self.fig = go.Figure()
         self.set_visualization()
@@ -201,9 +163,9 @@ class RadarPlot:
         st.plotly_chart(
             self.fig,
             config={"displayModeBar": False},
-            height=500,
             use_container_width=True,
         )
+
 
     def set_visualization(self):
         # Streamlit primary color
@@ -214,7 +176,8 @@ class RadarPlot:
     
         df_entity = self.entity.iloc[-2*len(self.cols):-len(self.cols)]
         r_values = df_entity.values.tolist()
-        theta_values=self.cols
+        #theta_values=self.cols
+        theta_values=[wrap_text(c) for c in self.cols]
 
         # Repeat the first element at the end to close the polygon
         r_values.append(r_values[0])
@@ -242,16 +205,16 @@ class RadarPlot:
                     range=[-4, 4],
                     gridcolor=rgb_to_color(hex_to_rgb("#E0E0E0")),
                     linecolor=rgb_to_color(hex_to_rgb("#CCCCCC")),
-                    tickfont=dict(size=12)
+                    tickfont=dict(size=10)
                 ),
                 angularaxis=dict(
-                    tickfont=dict(size=14, family="Gilroy-Light", color="#333")
+                    tickfont=dict(size=10, family="Gilroy-Light", color="#333")
                 )
             ),
-            margin=dict(l=40, r=40, t=40, b=40),
-            paper_bgcolor="white",
+            margin=dict(l=75, r=85, t=55, b=55),
             plot_bgcolor="white",
             showlegend=False,
+            autosize=True,
         )
 
 
