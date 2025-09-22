@@ -243,11 +243,14 @@ def show_evaluation():
     if entity_type == "person":
         metrics = ["extraversion", "neuroticism", "agreeableness", "conscientiousness", "openness"]
     elif entity_type == "player":
-        metrics = [
-            "npxG_adjusted_per90", "goals_adjusted_per90", "assists_adjusted_per90",
-            "key_passes_adjusted_per90", "smart_passes_adjusted_per90",
-            "final_third_passes_adjusted_per90", "final_third_receptions_adjusted_per90",
-            "ground_duels_won_adjusted_per90", "air_duels_won_adjusted_per90",
+        #metrics = [
+        #    "npxG_adjusted_per90", "goals_adjusted_per90", "assists_adjusted_per90",
+        #    "key_passes_adjusted_per90", "smart_passes_adjusted_per90",
+        #    "final_third_passes_adjusted_per90", "final_third_receptions_adjusted_per90",
+        #    "ground_duels_won_adjusted_per90", "air_duels_won_adjusted_per90",
+        #]
+        metrics = ["non-penalty expected goals","goals","assists","key passes",
+                "smart passes","final passes","final third receptions","ground duels","air duels",
         ]
     else:  # country
         metrics = [m for m in CountryStats().df.columns if m not in ["country"]]
