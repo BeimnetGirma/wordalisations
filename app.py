@@ -55,7 +55,7 @@ def show_entity_plots(entity_type, entity_name, metrics):
         dataset = PersonStat()
         dataset.calculate_statistics(metrics=metrics)
     elif entity_type == "player":
-        entity = select_player(entity_name, list(metrics_dict.keys()))
+        entity = select_player(entity_name, metrics)
         dataset = PlayerStats()
         dataset.calculate_statistics(metrics=list(metrics_dict.keys()))
         metrics = list(metrics_dict.values())
