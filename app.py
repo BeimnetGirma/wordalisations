@@ -34,6 +34,7 @@ def select_person(player_name, metrics):
 
 def select_player(player_name, metrics):
     players = PlayerStats()
+    metrics = list(metrics_name.keys())
     players.calculate_statistics(metrics=metrics)
     player = copy.deepcopy(players)
     player.df = player.df[player.df["player_name"] == player_name]
