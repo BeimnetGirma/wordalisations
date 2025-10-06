@@ -34,7 +34,7 @@ def select_person(player_name, metrics):
 
 def select_player(player_name, metrics):
     players = PlayerStats()
-    players.calculate_statistics(metrics=metrics)
+    players.calculate_statistics(metrics=list(metrics.keys()))
     player = copy.deepcopy(players)
     player.df = player.df[player.df["player_name"] == player_name]
     return player.to_data_point(gender="male", position="Forward")
@@ -54,11 +54,10 @@ def show_entity_plots(entity_type, entity_name, metrics):
         dataset = PersonStat()
         dataset.calculate_statistics(metrics=metrics)
     elif entity_type == "player":
-        metrics = list(metrics_name.keys())
         entity = select_player(entity_name, metrics)
         dataset = PlayerStats()
-        dataset.calculate_statistics(metrics=metrics)
-        metrics = list(metrics_name.values())
+        dataset.calculate_statistics(metrics=list(metrics.keys()))
+        metrics = list(metrics.values())
     else:  # country
         entity = select_country(entity_name, metrics)
         dataset = CountryStats()
