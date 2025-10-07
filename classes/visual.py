@@ -6,6 +6,7 @@ import plotly.express as px
 from scipy.stats import zscore
 import streamlit as st
 
+
 #import plotly.express as px
 
 from utils.sentences import format_metric
@@ -36,12 +37,13 @@ def wrap_text(text, max_len=15):
     return wrapped_text.strip()
 
 class DistributionPlot:
-    def __init__(self, dataframe, entity, metrics, *args, **kwargs):
+    def __init__(self, dataframe, entity,  metrics,explanation_provider=None, *args, **kwargs):
         self.cols = metrics
         self.dataframe = dataframe.df
         self.entity = entity.ser_metrics
         self.background = hex_to_rgb("#faf9ed")
         self.color = hex_to_rgb("#eddefa")
+        self.explanation_provider = explanation_provider
         self.fig = go.Figure()
         self.set_visualization()
         super().__init__(*args, **kwargs)
@@ -69,6 +71,16 @@ class DistributionPlot:
             zerolinecolor=rgb_to_color(hex_to_rgb("#ffffff")),
         )
 
+    def get_explanation_text(self, metric_name, value):
+        """Safely get explanation text or return empty string."""
+        if self.explanation_provider is None:
+            return ""
+        try:
+            return self.explanation_provider.get_explanation(metric_name, self.entity, value)
+        except Exception as e:
+            print(f"Explanation error for {metric_name}: {e}")
+            return ""
+
 
 
     def set_visualization(self):
@@ -86,8 +98,9 @@ class DistributionPlot:
             shared_xaxes=True,  # Keep the same scale for all
             vertical_spacing=0.0
         )
-
+        
         for i, col in enumerate(dataframe.columns):
+            
             self.fig.add_trace(
                 go.Violin(
                     x=dataframe[col].tolist(),
@@ -105,6 +118,15 @@ class DistributionPlot:
 
             # Entity marker
             entity_value = float(df_entity.iloc[i])
+            rank_value=round(float(df_entity_rank.iloc[i]))
+            
+
+            explanation=self.get_explanation_text(col,entity_value)
+            hovertext=(
+                  f"<b>{self.cols[i].capitalize().replace('_z', ' ')}</b><br>Value: {entity_value:.3f}<br>Rank: {rank_value}"
+                + (f"<br><i>{explanation}</i>" if explanation else "")
+                + "<extra></extra>"
+            )
             self.fig.add_trace(
                 go.Scatter(
                     x=[entity_value],
@@ -113,15 +135,27 @@ class DistributionPlot:
                     marker=dict(symbol="diamond", size=6, color="#9340ff"),
                     name="Selected entity",  # this will appear in the legend
                     showlegend=(i == 0),  # ensures legend is shown
-                    hovertemplate=f"<b>{self.cols[i]}</b><br>Value: %{{x}}<br>Rank: %{{customdata}}<extra></extra>",
+                    hovertemplate=hovertext,
                     customdata=[round(float(df_entity_rank.iloc[i]))]
                 
                     ),
                     row=i+1,
                     col=1
                     )
+            # self.fig.add_annotation(
+            #     text=explanation,
+            #     x=1.5, y=0.75,   # relative placement inside subplot
+            #     xref=f"x{i+2} domain",
+            #     yref=f"y{i+2} domain",
+            #     showarrow=False,
+            #     font=dict(size=12, color="black"),
+            #     align="center",
+            #     bgcolor="rgba(237,222,250,0.3)",  # same color palette you used
+            #     bordercolor="#9340ff",
+            #     borderwidth=1,
+            #     )
 
-
+            
         # Update layout
         self.fig.update_layout(
             template="plotly_white",
@@ -148,15 +182,15 @@ class DistributionPlot:
 
 
 class RadarPlot:
-    def __init__(self, entity, metrics, *args, **kwargs):
+    def __init__(self, entity, metrics, explanation_provider=None, *args, **kwargs):
 
         self.cols = metrics
         self.entity = entity.ser_metrics
+        self.explanation_provider = explanation_provider
         self.color = hex_to_rgb("#faf9ed")
         self.fig = go.Figure()
-        self.set_visualization()
-
         super().__init__(*args, **kwargs)
+        self.set_visualization()
      
 
     def show(self):
@@ -165,6 +199,16 @@ class RadarPlot:
             config={"displayModeBar": False},
             use_container_width=True,
         )
+
+    # def get_explanation_text(self, metric_name, value):
+    #     """Safely get explanation text or return empty string."""
+    #     if self.explanation_provider is None:
+    #         return ""
+    #     try:
+    #         return self.explanation_provider.get_explanation(metric_name, self.entity, value)
+    #     except Exception as e:
+    #         print(f"Explanation error for {metric_name}: {e}")
+    #         return ""
 
 
     def set_visualization(self):
@@ -183,19 +227,59 @@ class RadarPlot:
         r_values.append(r_values[0])
         theta_values = theta_values + [theta_values[0]]
 
+        hover_texts = []
+        for metric, r in zip(self.cols, r_values[:-1]):  # skip closing point
+            # Use explainer if available
+            if self.explanation_provider:
+                try:
+                    explanation = self.explanation_provider.get_explanation(metric,self.entity, r)
+                    hover_texts.append(f"<br>{explanation}")
+                except Exception:
+                    # Fallback in case explainer fails or metric missing
+                    hover_texts.append(f"")
+            else:
+                # No explainer available
+                hover_texts.append(f"")
+
+        # Repeat hover text for closing point
+        hover_texts.append(hover_texts[0])
         # Add the entity as a highlighted polygon
         self.fig.add_trace(
             go.Scatterpolar(
-                r = r_values,
-                theta = theta_values,
-                mode="lines+markers",
-                line=dict(color=rgb_to_color(hex_to_rgb("#9340ff")), width=3),
-                marker=dict(size=8, color=rgb_to_color(hex_to_rgb("#9340ff"))),
-                fill="toself",
-                hovertemplate="<b>%{theta}</b>: %{r}<extra></extra>", 
-                showlegend=False,
+            r = r_values,
+            theta = theta_values,
+            mode="lines+markers",
+            line=dict(color=rgb_to_color(hex_to_rgb("#9340ff")), width=3),
+            marker=dict(size=8, color=rgb_to_color(hex_to_rgb("#9340ff"))),
+            fill="toself",
+            hovertext=[f"<b>{metric.capitalize()}</b>: {value:.3f}<br><i>{explanation}</i>" for metric, value, explanation in zip(self.cols + [self.cols[0]], r_values, hover_texts)],
+            hoverinfo="text",
+            showlegend=False,
             )
         )
+        # add annotations for each metric
+        # Place annotation boxes just outside the radar circle
+        radius = 0.55  # slightly outside the circle (circle radius is 0.4)
+        num_metrics = len(self.cols)
+        for i, (theta, r, hover) in enumerate(zip(theta_values[:-1], r_values[:-1], hover_texts[:-1])):
+            angle = 2 * np.pi * i / num_metrics
+            x = 0.5 + radius * np.cos(angle)
+            y = 0.5 + radius * np.sin(angle)
+            if hover.strip():
+                self.fig.add_annotation(
+                xref="paper",
+                yref="paper",
+                x=x,
+                y=y,
+                text=hover,
+                showarrow=False,
+                font=dict(size=12, color="#9340ff"),
+                align="center",
+                bgcolor="rgba(255,255,255,0.8)",
+                bordercolor="#9340ff",
+                borderwidth=1,
+                borderpad=4,
+                )
 
 
         self.fig.update_layout(

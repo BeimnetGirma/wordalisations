@@ -7,9 +7,9 @@ import pandas as pd
 import time
 import uuid
 import copy
-
+import json
 from streamlit_gsheets import GSheetsConnection
-
+from classes.explainer import CountryExplanationProvider, PersonExplanationProvider
 from classes.data_source import PlayerStats, PersonStat, CountryStats
 from classes.data_point import Player
 from classes.visual import DistributionPlot, RadarPlot
@@ -53,18 +53,33 @@ def show_entity_plots(entity_type, entity_name, metrics):
         entity = select_person(entity_name, metrics)
         dataset = PersonStat()
         dataset.calculate_statistics(metrics=metrics)
+        explanation_provider = PersonExplanationProvider(dataset.get_questions())
+        visual_distribution= DistributionPlot(dataset, entity, metrics, explanation_provider=explanation_provider)
+        visual_radar = RadarPlot(entity, metrics, explanation_provider=explanation_provider)
+        # visual_distribution.show()
+        # visual_radar.show()
     elif entity_type == "player":
         entity = select_player(entity_name, metrics)
         dataset = PlayerStats()
         dataset.calculate_statistics(metrics=list(metrics.keys()))
         metrics = list(metrics.values())
+        visual_distribution= DistributionPlot(dataset, entity, metrics)
+        visual_radar = RadarPlot(entity, metrics)
+        # visual_distribution.show()
+        # visual_radar.show()
     else:  # country
         entity = select_country(entity_name, metrics)
         dataset = CountryStats()
         dataset.calculate_statistics(metrics=metrics)
-
-    visual_distribution = DistributionPlot(dataset, entity, metrics)
-    visual_radar = RadarPlot(entity, metrics)
+        with open("data/wvs/intermediate_data/relevant_questions.json", "r") as f:
+            relevant_questions = json.load(f)
+        explanation_provider = CountryExplanationProvider(relevant_questions, entity.drill_down_metrics)
+        visual_distribution= DistributionPlot(dataset, entity, metrics, explanation_provider=explanation_provider)
+        visual_radar = RadarPlot(entity, metrics, explanation_provider=explanation_provider)
+        # visual_distribution.show()
+        # visual_radar.show()
+        
+    
 
     col1, col2 = st.columns(2)
     with col1: visual_distribution.show()
@@ -211,12 +226,21 @@ def show_evaluation():
     # Right-align the button using columns
     button_col = st.columns([7, 2])[1]
     with button_col:
+        def get_different_question():
+            all_items = list(df[['Name', 'entity']].itertuples(index=False, name=None))
+            remaining = [item for item in all_items if item not in st.session_state.seen]
+            if remaining:
+                st.session_state.current_entity = random.choice(remaining)
+            else:
+                st.warning("✅ You have completed all evaluations. Thank you!")
+                st.stop()
+
         st.button(
             "Get a different question",
-            on_click=lambda: st.session_state.update(
-                current_entity=random.choice([item for item in list(df[['Name', 'entity']].itertuples(index=False, name=None)) if item not in st.session_state.seen])
-            )
+            on_click=get_different_question
         )
+
+    
 
 
     # Session state init
