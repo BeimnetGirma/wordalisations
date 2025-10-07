@@ -73,8 +73,7 @@ class PersonExplanationProvider(ExplanationProvider):
         metric_name = metric_name.replace("_Z", "")
         start, end = self.metric_ranges[metric_name.lower().capitalize()]
         sub_metrics = entity[start:end]
-        z_value = entity[metric_name]
-        
+        z_value = entity[metric_name+"_Z"]
         if abs(z_value) >1 :
             if z_value >0:
                 index_max= sub_metrics.idxmax()
