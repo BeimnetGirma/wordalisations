@@ -504,11 +504,62 @@ class PersonDescription(Description):
         return list(row[row == min_value].index)
 
     def get_description(self, person):
+        person_metrics = person.ser_metrics
+        person_stat = PersonStat()
+        questions = person_stat.get_questions()
+
+        traits = [
+            ("extraversion", "solitary and reserved. ", "outgoing and energetic. ",
+            "The candidate tends to be more social. ", "The candidate tends to be less social. "),
+            ("neuroticism", "resilient and confident. ", "sensitive and nervous. ",
+            "The candidate tends to feel more negative emotions and anxiety. ",
+            "The candidate tends to feel less negative emotions and anxiety. "),
+            ("agreeableness", "critical and rational. ", "friendly and compassionate. ",
+            "The candidate tends to be more cooperative, polite, kind and friendly. ",
+            "The candidate tends to be less cooperative, polite, kind and friendly. "),
+            ("conscientiousness", "extravagant and careless. ", "efficient and organized. ",
+            "The candidate tends to be more careful or diligent. ",
+            "The candidate tends to be less careful or diligent. "),
+            ("openness", "consistent and cautious. ", "inventive and curious. ",
+            "The candidate tends to be more open to new ideas and experiences. ",
+            "The candidate tends to be less open to new ideas and experiences. ")
+        ]
+
+        text_parts = []
+
+        for i, (trait, cat_0, cat_1, pos_desc, neg_desc) in enumerate(traits):
+            z_score = person_metrics[f"{trait}_Z"]
+            start, end = i * 10, (i + 1) * 10
+
+            # Base description
+            if z_score > 0:
+                description = f"{self.categorie_description(z_score)}{cat_1}{pos_desc}"
+                if z_score > 1:
+                    index_max = person_metrics[start:end].idxmax()
+                    print(person_metrics[start:end])
+                    print(index_max, "max", questions[index_max][1])
+                    description += f"In particular they said that {questions[index_max][0]}. "
+            else:
+                description = f"{self.categorie_description(z_score)}{cat_0}{neg_desc}"
+                if z_score < -1:
+                    index_min = person_metrics[start:end].idxmin()
+                    print(person_metrics[start:end])
+                    print(index_min, "min", questions[index_min][1])
+                    description += f"In particular they said that {questions[index_min][0]}. "
+
+            text_parts.append(description)
+
+        final_text = "".join(text_parts).replace(",", "")
+        return final_text
+
+
+    def get_description2(self, person):
         # here we need the dataset to check the min and max score of the person
 
         person_metrics = person.ser_metrics
         person_stat = PersonStat()
         questions = person_stat.get_questions()
+        
 
         name = person.name
         extraversion = person_metrics["extraversion_Z"]
@@ -561,6 +612,7 @@ class PersonDescription(Description):
             )
             if neuroticism > 1:
                 index_max = person_metrics[10:20].idxmax()
+               
                 text_2 = (
                     "In particular they said that " + questions[index_max][0] + ". "
                 )
@@ -573,7 +625,8 @@ class PersonDescription(Description):
                 + "The candidate tends to feel less negative emotions and anxiety. "
             )
             if neuroticism < -1:
-                index_min = person_metrics[10:20].idxmin()
+                index_min = person_metrics[10:20].idxmin()  
+                
                 text_2 = (
                     "In particular they said that " + questions[index_min][0] + ". "
                 )
@@ -592,6 +645,7 @@ class PersonDescription(Description):
             )
             if agreeableness > 1:
                 index_max = person_metrics[20:30].idxmax()
+             
                 text_2 = (
                     "In particular they said that " + questions[index_max][0] + ". "
                 )
@@ -605,6 +659,7 @@ class PersonDescription(Description):
             )
             if agreeableness < -1:
                 index_min = person_metrics[20:30].idxmin()
+             
                 text_2 = (
                     "In particular they said that " + questions[index_min][0] + ". "
                 )
@@ -623,6 +678,7 @@ class PersonDescription(Description):
             )
             if conscientiousness > 1:
                 index_max = person_metrics[30:40].idxmax()
+
                 text_2 = (
                     "In particular they said that " + questions[index_max][0] + ". "
                 )
@@ -635,6 +691,7 @@ class PersonDescription(Description):
             )
             if conscientiousness < -1:
                 index_min = person_metrics[30:40].idxmin()
+
                 text_2 = (
                     "In particular they said that " + questions[index_min][0] + ". "
                 )
@@ -653,6 +710,7 @@ class PersonDescription(Description):
             )
             if openness > 1:
                 index_max = person_metrics[40:50].idxmax()
+        
                 text_2 = (
                     "In particular they said that " + questions[index_max][0] + ". "
                 )
@@ -665,6 +723,7 @@ class PersonDescription(Description):
             )
             if openness < -1:
                 index_min = person_metrics[40:50].idxmin()
+             
                 text_2 = (
                     "In particular they said that " + questions[index_min][0] + ". "
                 )
