@@ -97,7 +97,7 @@ def generate_player_descriptions(n=10):
         numerical_parts = [f"{col}: {val:.2f}" for col, val in zip(data.index, data.values)]
         numerical_description = f"Here are the {player_name} z-scores on key football metrics: " + ", ".join(numerical_parts)
         synthetic_description=p_description.synthesize_text()
-        result=stream_gpt("player",synthetic_description, numerical_description)
+        result=stream_gpt("player",synthetic_description, numerical_description, player_name)
         # st.write(result)
         df_result = pd.DataFrame(result, columns=["Type", "LLMResponse"])
         # add player name column
@@ -216,7 +216,7 @@ def generate_country_descriptions(n=10):
         synthetic_description=c_description.synthesize_text()
         # st.write(synthetic_description)
         # st.write(numerical_description) 
-        result=stream_gpt("country",synthetic_description, numerical_description)
+        result=stream_gpt("country",synthetic_description, numerical_description, country_id)
         # st.write(result)
         df_result = pd.DataFrame(result, columns=["Type", "LLMResponse"])
         # add country name column
@@ -322,7 +322,7 @@ def generate_person_descriptions(n=10):
             numerical_parts.append(part)
         numerical_description = "Here are the candidates z-scores on their personality test: " + ", ".join(numerical_parts)
         synthetic_description = c_description.synthesize_text()
-        result = stream_gpt("person", synthetic_description, numerical_description)
+        result = stream_gpt("person", synthetic_description, numerical_description, person_id)
         df_result = pd.DataFrame(result, columns=["Type", "LLMResponse"])
         df_result["Name"] = person_id
         evaluation_descriptions.append(df_result)
@@ -335,32 +335,47 @@ def generate_person_descriptions(n=10):
 
 
 
-def stream_gpt(entity, synthetic_description, numerical_description):
+def stream_gpt(entity, synthetic_description, numerical_description, entity_id=None):
     # Set OpenAI API key
     openai.api_key = GPT_KEY
+    st.write(f"### Generating {entity} Descriptions")
+
     # client = OpenAI()
     scaffolds={"W": json.load(open(f"evaluation/human-evaluation/prompts/wordalization_{entity}_prompt.json", encoding="utf-8")),
                "N": json.load(open(f"evaluation/human-evaluation/prompts/numerical_{entity}_prompt_v1.json", encoding="utf-8")),
                "Z": json.load(open(f"evaluation/human-evaluation/prompts/zero_knowledge_{entity}_prompt_v1.json", encoding="utf-8"))
                }
 
-    PROMPT={
-        "W": "Now do the same thing with the following: '''{synthetic_description}'''",
-        "N": "Please describe the entity using the statistical information enclose with '''. Give a concise, 4 sentence summary. : '''{numerical_description}'''",
-        "Z": "Please give a concise 4 sentence summary of the entity."
+    if entity == "person":
+        entity_label = "job candidate"
+    elif entity == "country":
+        entity_label = ""
+    elif entity == "player":
+        entity_label = "football player"
+    else:
+        entity_label = entity
 
+    PROMPT = {
+        "W": f"Now do the same thing with the following {entity_label}: '''{{synthetic_description}}'''",
+        "N": f"Please describe the {entity_label} using the statistical information enclosed with '''. Give a concise, 4 sentence summary. : '''{{numerical_description}}'''",
+        "Z": f"Please give a concise 4 sentence summary of the {entity_label} {entity_id}."
     }
     results=[]
     for key in scaffolds:
         prompt = PROMPT[key].format(
             synthetic_description=synthetic_description,
-            numerical_description=numerical_description
+            numerical_description=numerical_description,
+            entity=entity,
+            entity_id=entity_id,
         )
 
         messages = scaffolds[key] + [{"role": "user", "content": prompt}]
         openai.api_base = GPT_BASE
         openai.api_version = GPT_VERSION
         openai.api_key = GPT_KEY
+
+        st.write(f"Generating {key} description...")
+        st.write(messages)
         
         try:
             response= openai.ChatCompletion.create(
@@ -374,6 +389,8 @@ def stream_gpt(entity, synthetic_description, numerical_description):
             llm_output = "Error: " + str(e)
         finally:
             results.append((key, llm_output))
+            st.write(f"Generated {key} description.")
+            st.write(llm_output)
     return results
 
 def combine_descriptions():
