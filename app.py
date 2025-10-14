@@ -54,7 +54,15 @@ def show_entity_plots(entity_type, entity_name, metrics):
         dataset = PersonStat()
         dataset.calculate_statistics(metrics=metrics)
         explanation_provider = PersonExplanationProvider(dataset.get_questions())
-        visual_distribution= DistributionPlot(dataset, entity, metrics, explanation_provider=explanation_provider)
+        person_plot_labels={
+            "extraversion": ("Introverted", "Extraverted"),
+            "neuroticism": ("Calm", "Nervous"),
+            "agreeableness": ("Competitive", "Cooperative"),
+            "conscientiousness": ("Easy-going", "Hard-working"),
+            "openness": ("Practical", "Imaginative")
+
+        }
+        visual_distribution= DistributionPlot(dataset, entity, metrics, explanation_provider=explanation_provider, labels=person_plot_labels, selected_entity=entity_name)
         visual_radar = RadarPlot(entity, metrics, explanation_provider=explanation_provider)
         # visual_distribution.show()
         # visual_radar.show()
@@ -63,7 +71,7 @@ def show_entity_plots(entity_type, entity_name, metrics):
         dataset = PlayerStats()
         dataset.calculate_statistics(metrics=list(metrics.keys()))
         metrics = list(metrics.values())
-        visual_distribution= DistributionPlot(dataset, entity, metrics)
+        visual_distribution= DistributionPlot(dataset, entity, metrics, selected_entity=entity_name)
         visual_radar = RadarPlot(entity, metrics)
         # visual_distribution.show()
         # visual_radar.show()
@@ -74,7 +82,15 @@ def show_entity_plots(entity_type, entity_name, metrics):
         with open("data/wvs/intermediate_data/relevant_questions.json", "r") as f:
             relevant_questions = json.load(f)
         explanation_provider = CountryExplanationProvider(relevant_questions, entity.drill_down_metrics)
-        visual_distribution= DistributionPlot(dataset, entity, metrics, explanation_provider=explanation_provider)
+        country_plot_labels={
+            "Traditional vs Secular Values": ("Traditional", "Secular"),
+            "Survival vs Self-expression Values": ("Survival", "Self-Expression"),
+            "Neutrality": ("Passive", "Active"),
+            "Fairness": ("Permissive", "Principled"),
+            "Skepticism": ("Trusting", "Skeptical"),
+            "Societal Tranquility": ("Anxious", "Secure"),
+        }
+        visual_distribution= DistributionPlot(dataset, entity, metrics, explanation_provider=explanation_provider, labels=country_plot_labels, selected_entity=entity_name)
         visual_radar = RadarPlot(entity, metrics, explanation_provider=explanation_provider)
         # visual_distribution.show()
         # visual_radar.show()

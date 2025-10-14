@@ -37,13 +37,15 @@ def wrap_text(text, max_len=15):
     return wrapped_text.strip()
 
 class DistributionPlot:
-    def __init__(self, dataframe, entity,  metrics,explanation_provider=None, *args, **kwargs):
+    def __init__(self, dataframe, entity,  metrics,explanation_provider=None,labels=None, selected_entity=None, *args, **kwargs):
         self.cols = metrics
         self.dataframe = dataframe.df
         self.entity = entity.ser_metrics
         self.background = hex_to_rgb("#faf9ed")
         self.color = hex_to_rgb("#eddefa")
         self.explanation_provider = explanation_provider
+        self.labels= labels
+        self.selected_entity = selected_entity
         self.fig = go.Figure()
         self.set_visualization()
         super().__init__(*args, **kwargs)
@@ -57,19 +59,38 @@ class DistributionPlot:
         )
 
     def _setup_axes(self):
-        self.fig.update_xaxes(
-            range=[-4, 4],
+        if self.labels is  None:
+            self.fig.update_xaxes(
+            range=[-3, 4],
             fixedrange=True,
             showgrid=False,
             gridcolor=rgb_to_color(hex_to_rgb("#6a5acd"), 0.7),
-        )
-        self.fig.update_yaxes(
-            showticklabels=True,
+            )
+        else:
+            self.fig.update_xaxes(
+            range=[-5, 5],
             fixedrange=True,
             showgrid=False,
-            gridcolor=rgb_to_color(self.background),
-            zerolinecolor=rgb_to_color(hex_to_rgb("#ffffff")),
-        )
+            gridcolor=rgb_to_color(hex_to_rgb("#6a5acd"), 0.7),
+            )
+        if self.labels is not None:
+            # Hide metric names if we have custom left/right labels
+            self.fig.update_yaxes(
+                showticklabels=False,
+                fixedrange=True,
+                showgrid=False,
+                gridcolor=rgb_to_color(self.background),
+                zerolinecolor=rgb_to_color(hex_to_rgb("#ffffff")),
+            )
+        else:
+            # Keep default tick labels
+            self.fig.update_yaxes(
+                showticklabels=True,
+                fixedrange=True,
+                showgrid=False,
+                gridcolor=rgb_to_color(self.background),
+                zerolinecolor=rgb_to_color(hex_to_rgb("#ffffff")),
+            )
 
     def get_explanation_text(self, metric_name, value):
         """Safely get explanation text or return empty string."""
@@ -133,7 +154,7 @@ class DistributionPlot:
                     y=[self.cols[i]],
                     mode="markers", # if we want marker and text do "markers+text"
                     marker=dict(symbol="diamond", size=6, color="#9340ff"),
-                    name="Selected entity",  # this will appear in the legend
+                    name=self.selected_entity,
                     showlegend=(i == 0),  # ensures legend is shown
                     hovertemplate=hovertext,
                     customdata=[round(float(df_entity_rank.iloc[i]))]
@@ -155,11 +176,69 @@ class DistributionPlot:
             #     borderwidth=1,
             #     )
 
+
+             # Add left/right labels --
+            if self.labels is not None:
+                left_label, right_label = self.labels.get(self.cols[i], ("", ""))
+
+
+
+                if left_label or right_label:
+                    # Left-side label
+                    
+                    self.fig.add_annotation(
+                        text=left_label,
+                        xref=f"x{i+1}",
+                        yref=f"y{i+1}",
+                        x=-4.01,  # set annotation x position
+                        y=self.cols[i],
+                        showarrow=False,
+                        font=dict(size=11, color="gray"),
+                        xanchor="right",
+                        yshift=-10  # Slightly lower position
+                    )
+
+                    # Right-side label
+                    self.fig.add_annotation(
+                        text=right_label,
+                        xref=f"x{i+1}",
+                        yref=f"y{i+1}",
+                        x=4.01,  
+                        y=self.cols[i],
+                        showarrow=False,
+                        font=dict(size=11, color="gray"),
+                        xanchor="left",
+                        yshift=-10  # Slightly lower position
+                    )
+                    self.fig.add_annotation(
+                        text=f"{self.cols[i].capitalize().replace('_z', '')}",
+                        xref=f"x{i+1}",
+                        yref=f"y{i+1}",
+                        x=0.5,                  # centered horizontally
+                        y=0.05,                 # just above the plot area
+                        showarrow=False,
+                        font=dict(size=13, color="black"),
+                        xanchor="center",
+                        yanchor="bottom"
+                    )
+                    # self.fig.add_annotation(
+                    #     text=f"{self.cols[i].capitalize().replace('_z', '')}",
+                    #     x=0.5,  # centered horizontally
+                    #     y=(len(self.cols) - i) / len(self.cols) + 0.01,  # position in paper coords
+                    #     xref="paper",
+                    #     yref="paper",
+                    #     showarrow=False,
+                    #     font=dict(size=13, color="black"),
+                    #     xanchor="center",
+                    #     yanchor="bottom"
+                    # )
+
+
             
         # Update layout
         self.fig.update_layout(
             template="plotly_white",
-            title=dict(text="<b>Distribution of Metrics</b>",x=0.55, font=dict(size=14)),
+            title=dict(text="<b>Distribution of Metrics</b>",x=0.50, font=dict(size=14)),
             showlegend=True,
             margin=dict(t=50, b=50, l=45, r=25),
             font = dict(size=14),
@@ -176,7 +255,14 @@ class DistributionPlot:
     
         # Add grid & font styling
         self.fig.update_xaxes(showgrid=True, gridcolor="rgba(200,200,200,0.3)")
-        self.fig.update_yaxes(showgrid=False)
+        # self.fig.update_yaxes(showgrid=False)
+
+        if self.labels is not None:
+            # Only hide metric names if we have left/right labels
+            self.fig.update_yaxes(showgrid=False, showticklabels=False)
+        else:
+            # Keep metric names visible
+            self.fig.update_yaxes(showgrid=False , showticklabels=True)
 
 
 
@@ -259,13 +345,13 @@ class RadarPlot:
         )
         # add annotations for each metric
         # Place annotation boxes just outside the radar circle
-        radius = 0.55  # slightly outside the circle (circle radius is 0.4)
+        radius = 0.4  # slightly outside the circle (circle radius is 0.4)
         num_metrics = len(self.cols)
         for i, (theta, r, hover) in enumerate(zip(theta_values[:-1], r_values[:-1], hover_texts[:-1])):
-            angle = 2 * np.pi * i / num_metrics
+            angle =  1* np.pi * i / num_metrics
             x = 0.5 + radius * np.cos(angle)
-            y = 0.5 + radius * np.sin(angle)
-            if hover.strip():
+            y = 0.5+ radius * np.sin(angle)
+            if len(hover.replace("<br>", "").strip()) > 0:
                 self.fig.add_annotation(
                 xref="paper",
                 yref="paper",
