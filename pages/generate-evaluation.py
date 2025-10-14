@@ -338,7 +338,6 @@ def generate_person_descriptions(n=10):
 def stream_gpt(entity, synthetic_description, numerical_description, entity_id=None):
     # Set OpenAI API key
     openai.api_key = GPT_KEY
-    st.write(f"### Generating {entity} Descriptions")
 
     # client = OpenAI()
     scaffolds={"W": json.load(open(f"evaluation/human-evaluation/prompts/wordalization_{entity}_prompt.json", encoding="utf-8")),
@@ -374,8 +373,6 @@ def stream_gpt(entity, synthetic_description, numerical_description, entity_id=N
         openai.api_version = GPT_VERSION
         openai.api_key = GPT_KEY
 
-        st.write(f"Generating {key} description...")
-        st.write(messages)
         
         try:
             response= openai.ChatCompletion.create(
@@ -389,8 +386,6 @@ def stream_gpt(entity, synthetic_description, numerical_description, entity_id=N
             llm_output = "Error: " + str(e)
         finally:
             results.append((key, llm_output))
-            st.write(f"Generated {key} description.")
-            st.write(llm_output)
     return results
 
 def combine_descriptions():

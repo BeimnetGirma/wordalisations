@@ -142,7 +142,7 @@
   },
   {
     "role": "user",
-    "content": "Please use the statistical description enclosed with ``` to give a concise, 4 sentence summary of the person's personality, strengths and weaknesses. The first sentence should use varied language to give an overview of the person. The second sentence should describe the person's specific strengths based on the metrics. The third sentence should describe aspects in which the person is average and/or weak based on the statistics. Finally, summarise exactly how the person compares to others in the same position. "
+    "content": "Use the statistical personality description provided below to write 3 sentences describing the person.The first sentence should provide a general description of the person.The second sentence should mention any particular strengths or potential challenges reported. The third sentence should conclude what type of professional environment they will likely thrive in.Maintain an HR-appropriate tone and the text should be interpretive but not speculative. The sentences should flow naturally and read like a professional, concise summary rather than a list."
   },
   {
     "role": "user",
@@ -150,7 +150,7 @@
   },
   {
     "role": "assistant",
-    "content": "The candidate is highly outgoing and energetic, often initiating conversations and tending to be more social overall. They are also quite sensitive and nervous, experiencing higher levels of negative emotions and anxiety. Additionally, the candidate is friendly and compassionate, showing a strong tendency to be cooperative, polite, kind, and approachable.\nThe candidate is exceptionally efficient and organized, consistently demonstrating careful attention to detail and a diligent approach to tasks. In particular, they mentioned how they make an effort to pay attention to the finer points. On the other hand, the candidate is relatively consistent and cautious, showing a tendency to be less open to new ideas and experiences."
+    "content": "The candidate appears to be an outgoing and energetic individual who enjoys social interaction and readily engages others in conversation. They demonstrate strong organizational skills, attention to detail, and a cooperative nature, though their sensitivity may at times make them prone to stress or self-doubt. They are likely to thrive in structured, collaborative environments that value precision, clear expectations, and positive interpersonal dynamics."
   },
   {
     "role": "user",
@@ -158,7 +158,7 @@
   },
   {
     "role": "assistant",
-    "content": "The candidate is notably solitary and reserved, showing a tendency to be less social. They specifically mentioned that they don’t engage in many conversations. On the other hand, the candidate is highly resilient and confident, tending to experience fewer negative emotions and less anxiety. However, they did mention that they get stressed out easily in certain situations.\nThe candidate is relatively friendly and compassionate, often exhibiting cooperative, polite, and kind behavior. Despite this, the candidate demonstrates a tendency toward extravagance and carelessness, as they mentioned their tendency to make a mess of things and be less diligent.\nWhile the candidate is generally consistent and cautious, they also tend to be less open to new ideas and experiences, preferring stability over novelty."
+    "content": "The candidate appears to be a reserved and independent individual who is comfortable working alone and prefers minimal social interaction. They show confidence and emotional stability, though a tendency toward carelessness or disorganization may occasionally impact their work quality. They are likely to perform best in roles that allow autonomy, clear structure, and limited social demands, where their self-assurance and steady temperament can contribute effectively."
   },
   {
     "role": "user",
@@ -166,7 +166,7 @@
   },
   {
     "role": "assistant",
-    "content": "The candidate is generally solitary and reserved, tending to be less social overall. They are also quite sensitive and nervous, often feeling more negative emotions and anxiety. However, they mentioned that they are relaxed most of the time despite these tendencies.\nThe candidate is somewhat critical and rational, showing a tendency to be less cooperative, polite, kind, and friendly in social interactions. They are also quite extravagant and careless, often being less careful or diligent in their approach.\nOn the positive side, the candidate is highly inventive and curious, demonstrating a strong openness to new ideas and experiences. They specifically mentioned having a rich vocabulary, indicating a deep interest in learning and exploring different subjects.\n"
+    "content": "The candidate appears to be an introspective and independent individual who values critical thinking and creativity. They demonstrate strong curiosity and openness to new ideas, though their sensitivity and tendency toward carelessness may occasionally pose challenges in structured environments. They are likely to thrive in roles that reward innovation and analytical depth, where independent work and intellectual exploration are encouraged."
   },
   {
     "role": "user",
@@ -174,6 +174,14 @@
   },
   {
     "role": "assistant",
-    "content": "The candidate is notably solitary and reserved, with a tendency to be less social in group settings. However, they are also quite resilient and confident, generally experiencing fewer negative emotions and less anxiety.\nWhile the candidate is relatively friendly and compassionate, they tend to exhibit more cooperative, polite, and kind behaviors in social interactions. They are highly efficient and organized, consistently demonstrating careful attention to detail and diligence. In particular, they mentioned that they are always well-prepared for any situation.\nThe candidate is also quite consistent and cautious, showing a preference for stability and reliability. However, they tend to be less open to new ideas and experiences, preferring familiar routines and approaches."
+    "content": "The candidate appears to be a composed and self-reliant individual who approaches their work with discipline and steadiness. They demonstrate strong organizational skills, reliability, and emotional resilience, though their preference for routine may limit adaptability to novel or rapidly changing situations. They are likely to thrive in structured and predictable professional environments that value consistency, precision, and accountability."
+  },
+  {
+    "role": "user",
+    "content": "The candidate is very outgoing and energetic. The candidate tends to be more social. In particular they said that they are the life of the party. The candidate is relatively sensitive and nervous. The candidate tends to feel more negative emotions and anxiety. The candidate is quite friendly and compassionate. The candidate tends to be more cooperative polite kind and friendly. The candidate is quite efficient and organized. The candidate tends to be more careful or diligent. The candidate is quite consistent and cautious. The candidate tends to be less open to new ideas and experiences."
+  },
+  {
+    "role": "assistant",
+    "content": "The candidate appears to be an outgoing and energetic individual who enjoys social interaction and brings enthusiasm to group settings. They demonstrate strong organizational skills, reliability, and kindness toward others, though their sensitivity may occasionally lead to stress in demanding situations. They are likely to thrive in structured, team-oriented environments where clear expectations and collaborative work are valued."
   }
 ]
