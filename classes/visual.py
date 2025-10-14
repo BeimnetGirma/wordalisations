@@ -60,9 +60,14 @@ class DistributionPlot:
 
     def _setup_axes(self):
         if self.labels is  None:
+            labels=["Worse", "Average", "Better"]
             self.fig.update_xaxes(
             range=[-3, 4],
             fixedrange=True,
+            tickmode='array',
+            tickvals=[-3, 0, 3],
+            ticktext=labels,
+            tickfont=dict(size=9),
             showgrid=False,
             gridcolor=rgb_to_color(hex_to_rgb("#6a5acd"), 0.7),
             )
@@ -117,7 +122,8 @@ class DistributionPlot:
             rows=len(self.cols),
             cols=1,
             shared_xaxes=True,  # Keep the same scale for all
-            vertical_spacing=0.0
+            vertical_spacing=0.01,
+            row_heights=[1/len(self.cols)]*len(self.cols)
         )
         
         for i, col in enumerate(dataframe.columns):
@@ -131,7 +137,9 @@ class DistributionPlot:
                     opacity=0.65,
                     side='positive',
                     showlegend = False,
-                    hovertemplate=f"<b>{self.cols[i]}</b><br>Value: %{{x}}<br>Count: %{{y}}<extra></extra>"
+                    # hovertemplate=f"<b>{self.cols[i]}</b><br>Value: %{{x}}<br>Count: %{{y}}<extra></extra>"
+                    hoverinfo="skip", hovertemplate=None,
+                    # hoveron="all",
                 ),
                 row=i+1,
                 col=1
@@ -153,12 +161,11 @@ class DistributionPlot:
                     x=[entity_value],
                     y=[self.cols[i]],
                     mode="markers", # if we want marker and text do "markers+text"
-                    marker=dict(symbol="diamond", size=6, color="#9340ff"),
+                    marker=dict(symbol="diamond", size=9, color="#9340ff"),
                     name=self.selected_entity,
                     showlegend=(i == 0),  # ensures legend is shown
                     hovertemplate=hovertext,
                     customdata=[round(float(df_entity_rank.iloc[i]))]
-                
                     ),
                     row=i+1,
                     col=1
@@ -175,6 +182,26 @@ class DistributionPlot:
             #     bordercolor="#9340ff",
             #     borderwidth=1,
             #     )
+
+
+            # --- Add explanation text to the right side of each violin, if it exists ---
+            if explanation.replace("<br>", "").strip():  # only if there's text
+                self.fig.add_annotation(
+                    text=explanation,
+                    x=1.04,  # slightly outside the plot area
+                    y=self.cols[i],
+                    xref="paper",  # anchor to figure, not subplot
+                    yref=f"y{i+1}",  # reference the subplot’s y-axis
+                    showarrow=False,
+                    font=dict(size=10, color=colors[i % len(colors)]),
+                    align="left",
+                    xanchor="left",
+                    yanchor="middle",
+                    bgcolor="rgba(255,255,255,0.7)",  # subtle background for readability
+                    bordercolor=colors[i % len(colors)],
+                    borderwidth=1,
+                    borderpad=4
+                )
 
 
              # Add left/right labels --
@@ -209,47 +236,38 @@ class DistributionPlot:
                         font=dict(size=11, color="gray"),
                         xanchor="left",
                         yshift=-10  # Slightly lower position
-                    )
+                    )         
+                    # Center label
                     self.fig.add_annotation(
                         text=f"{self.cols[i].capitalize().replace('_z', '')}",
+                        x=0,  # centered horizontally
+                        y=0.25,
                         xref=f"x{i+1}",
                         yref=f"y{i+1}",
-                        x=0.5,                  # centered horizontally
-                        y=0.05,                 # just above the plot area
                         showarrow=False,
-                        font=dict(size=13, color="black"),
+                        font=dict(size=11, color="black"),
                         xanchor="center",
                         yanchor="bottom"
                     )
-                    # self.fig.add_annotation(
-                    #     text=f"{self.cols[i].capitalize().replace('_z', '')}",
-                    #     x=0.5,  # centered horizontally
-                    #     y=(len(self.cols) - i) / len(self.cols) + 0.01,  # position in paper coords
-                    #     xref="paper",
-                    #     yref="paper",
-                    #     showarrow=False,
-                    #     font=dict(size=13, color="black"),
-                    #     xanchor="center",
-                    #     yanchor="bottom"
-                    # )
 
 
             
         # Update layout
         self.fig.update_layout(
             template="plotly_white",
-            title=dict(text="<b>Distribution of Metrics</b>",x=0.50, font=dict(size=14)),
+            # title=dict(text="<b>Distribution of Metrics</b>",x=0.50, font=dict(size=14)),
             showlegend=True,
-            margin=dict(t=50, b=50, l=45, r=25),
+            # margin=dict(t=50, b=50, l=45, r=25),
             font = dict(size=14),
-            autosize=True,
+            # autosize=True,
             legend=dict(
                 yanchor="bottom",
                 y=-0.2,
                 xanchor="right",
                 x=1,
-                font=dict(size=10)
-            )
+                font=dict(size=14)
+            ),
+            margin=dict(t=50, b=50, l=45, r=350)
         )
 
     

@@ -63,18 +63,14 @@ def show_entity_plots(entity_type, entity_name, metrics):
 
         }
         visual_distribution= DistributionPlot(dataset, entity, metrics, explanation_provider=explanation_provider, labels=person_plot_labels, selected_entity=entity_name)
-        visual_radar = RadarPlot(entity, metrics, explanation_provider=explanation_provider)
-        # visual_distribution.show()
-        # visual_radar.show()
+        # visual_radar = RadarPlot(entity, metrics, explanation_provider=explanation_provider)
     elif entity_type == "player":
         entity = select_player(entity_name, metrics)
         dataset = PlayerStats()
         dataset.calculate_statistics(metrics=list(metrics.keys()))
         metrics = list(metrics.values())
         visual_distribution= DistributionPlot(dataset, entity, metrics, selected_entity=entity_name)
-        visual_radar = RadarPlot(entity, metrics)
-        # visual_distribution.show()
-        # visual_radar.show()
+        # visual_radar = RadarPlot(entity, metrics)
     else:  # country
         entity = select_country(entity_name, metrics)
         dataset = CountryStats()
@@ -91,15 +87,13 @@ def show_entity_plots(entity_type, entity_name, metrics):
             "Societal Tranquility": ("Anxious", "Secure"),
         }
         visual_distribution= DistributionPlot(dataset, entity, metrics, explanation_provider=explanation_provider, labels=country_plot_labels, selected_entity=entity_name)
-        visual_radar = RadarPlot(entity, metrics, explanation_provider=explanation_provider)
-        # visual_distribution.show()
-        # visual_radar.show()
+        # visual_radar = RadarPlot(entity, metrics, explanation_provider=explanation_provider)
         
     
 
-    col1, col2 = st.columns(2)
-    with col1: visual_distribution.show()
-    with col2: visual_radar.show()
+    center_col = st.columns([1, 6, 1])[1]
+    with center_col:
+        visual_distribution.show()
 
 
 def vote_question(key, question, options, number=None):
