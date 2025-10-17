@@ -115,7 +115,7 @@ class DistributionPlot:
         df_entity_rank = self.entity.iloc[-len(self.cols):]
 
         # Color palette
-        colors = px.colors.qualitative.Set2
+        colors = px.colors.qualitative.Dark2 #px.colors.qualitative.Set2
 
         # Create subplots
         self.fig = make_subplots(
