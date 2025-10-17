@@ -203,6 +203,8 @@ class DistributionPlot:
                     borderpad=4
                 )
 
+             self.fig.update_layout(title=dict(text="<b>Additional informations</b>",x=2, font=dict(size=10)))
+
 
              # Add left/right labels --
             if self.labels is not None:
@@ -255,7 +257,7 @@ class DistributionPlot:
         # Update layout
         self.fig.update_layout(
             template="plotly_white",
-            # title=dict(text="<b>Distribution of Metrics</b>",x=0.50, font=dict(size=14)),
+            #title=dict(text="<b>Additional informations</b>",x=0.50, font=dict(size=14)),
             showlegend=True,
             # margin=dict(t=50, b=50, l=45, r=25),
             font = dict(size=14),
