@@ -113,27 +113,32 @@ def reset_questions():
 # Intro Page
 # ------------------------------
 def show_intro():
-    st.title("Welcome to the Evaluation Study 🎉")
+    st.title("Welcome 🎉")
 
     st.markdown("""
     Thank you for taking the time to participate in our study!  
 
+    We are conducting a study to evaluate the quality of LLM-generated descriptions for numerical data. We would greatly appreciate your help in assessing these descriptions we've generated using different approaches based on various criteria.         
+    """)
+
+    st.markdown("""
     In this evaluation, you will:
     - Be shown a **plot** for a single entity (person, country, or player).  
-    - Be shown a **generated description** of that plot.  
-    - Answer **four short questions**:  
+    - Be shown a **generated description** that should reflect what is being shown in the plot.  
+    - Be required to answer **four short questions** about the generated text regarding: 
         1. Faithfulness – Does the description match the plot?  
         2. Engagement – Is it engaging?  
-        3. Usefulness – Is it helpful for understanding?  
-        4. Hallucinations – Are there unsupported claims?  
+        3. Usefulness – Is it helpful for understanding what is being shown in the plot?  
+        4. Hallucinations – Are there unsupported claims in the text?  
 
     **How it works:**  
-    - Each page shows **one entity** along with its plot and description.  
-    - Simply answer the four questions and click Submit.  
-    - Feel free to evaluate as many as you like (we’d be grateful for at least one).  
-    - You can leave anytime, no pressure.  
+    - Each page shows **one entity** along with its plot. The plot shows where the entity is located in the data space. For some entities, a tooltip with additional information may be available to the right of the plot describing how the entity stands out in a specific feature from others in the dataset. This information, if present,  is also available when you hover over the plot points. The plot, along with this additional information, make up the reference (or ground truth) about the entity.
+    - Below the plot, you will see the **generated description** for the entity. Please read the description and assess if and how it reflects the information shown in the plot.
+    - Answer the four questions about the description and click Submit. Your responses will be recorded and you will be shown a new entity to evaluate.  
+    - Feel free to evaluate as many as you like (we’d be grateful for at least one😀). You can leave anytime, no pressure 😅.  
 
-    ⚠️ **Note:** We do not collect personal info, only anonymous session activity.
+    ⚠️ **Note:** We do not collect personal info aside from the questions we ask about you.  
+    Your responses are anonymous and confidential.
     """)
 
     st.button("Start Evaluation ✅", on_click=lambda: st.session_state.update(show_intro=False))
@@ -155,6 +160,14 @@ def show_demographics():
     We do not collect any personal information beyond what you provide here.  
     You can skip any question you prefer not to answer.  
     """)
+
+    st.markdown("""
+    <style>
+    div[data-baseweb="input"] > div {
+        width: 100% !important;
+    }
+    </style>
+    """, unsafe_allow_html=True)
 
     age_input = st.number_input("1. How old are you? (optional)", min_value=10, max_value=120, step=1, value=18)
     st.session_state.age = age_input if age_input else None
@@ -237,6 +250,7 @@ def show_evaluation():
     button_col = st.columns([7, 2])[1]
     with button_col:
         def get_different_question():
+            st.session_state.selected_entity_arm = None
             all_items = list(df[['Name', 'entity']].itertuples(index=False, name=None))
             remaining = [item for item in all_items if item not in st.session_state.seen]
             if remaining:
@@ -271,10 +285,13 @@ def show_evaluation():
 
     st.session_state.seen.add(st.session_state.current_entity)
     entity_name, entity_type = st.session_state.current_entity
-    row = df[(df['Name'] == entity_name) & (df['entity'] == entity_type)].iloc[0]
+    row = df[(df['Name'] == entity_name) & (df['entity'] == entity_type)].sample(1).iloc[0]
+    
+    if "selected_entity_arm" not in st.session_state or st.session_state.selected_entity_arm is None: 
+        st.session_state.selected_entity_arm = row
 
     # Show reference plot
-    st.subheader(f"Data for {entity_name} ({entity_type})")
+    st.subheader(f"Data for person {entity_name}" if entity_type == "person" else f"Data for {entity_name} ({entity_type})")
     if entity_type == "person":
         metrics = ["extraversion", "neuroticism", "agreeableness", "conscientiousness", "openness"]
     elif entity_type == "player":
@@ -300,13 +317,13 @@ def show_evaluation():
     center_col = st.columns([1, 8, 1])[1]
     with center_col:
         if entity_type == "person":
-            st.subheader("Here is a description for a job candidate:")
+            st.subheader(f"Description text for job candidate {entity_name}:")
         elif entity_type == "country":
-            st.subheader(f"Here is a description for {entity_name}:")
+            st.subheader(f"Description text for {entity_name}:")
         else:
-            st.subheader(f"Here is a description of the football player {entity_name}:")
+            st.subheader(f"Description text for football player {entity_name}:")
         
-        st.write(row.LLMResponse)
+        st.write(st.session_state.selected_entity_arm.LLMResponse)
 
         st.subheader("Questions")
         vote_question("faithfulness", "Does the text accurately represent the plot?", 
@@ -315,14 +332,14 @@ def show_evaluation():
                       ["Not engaging", "Somewhat engaging", "Engaging", "Very engaging"], 2)
 
         if entity_type == "person":
-            usefulness_q = "How useful is this description for a hiring decision?"
+            usefulness_q = "How useful is this description for making a hiring decision?"
         elif entity_type == "country":
-            usefulness_q = "How useful is this description for understanding the world value?"
+            usefulness_q = "How useful is this description for understanding the country's value system?"
         else:
-            usefulness_q = "How useful is this description for learning about a football player?"
+            usefulness_q = "How useful is this description for scouting players?"
 
         vote_question("usefulness", usefulness_q, 
-                      ["Very unuseful", "Unuseful", "Useful", "Very useful"], 3)
+                      ["Not useful", "Partially useful", "Useful", "Very useful"], 3)
 
         vote_question("hallucination", "Does the text contain hallucinations (claims not supported by the figures above)?", ["No", "Yes"], 4)
 
@@ -349,6 +366,7 @@ def show_evaluation():
                     "rater_id": st.session_state.rater_id,
                     "entity": entity_type,
                     "entity_id": row.Name,
+                    "description_arm": st.session_state.selected_entity_arm.Type,
                     "faithfulness": st.session_state.faithfulness,
                     "engagement": st.session_state.engagement,
                     "usefulness": st.session_state.usefulness,
@@ -362,13 +380,13 @@ def show_evaluation():
                 existing = conn.read(ttl=0)
                 update = pd.concat([existing, pd.DataFrame([response_data])], ignore_index=True)
                 conn.update(worksheet="Sheet1", data=update)
-
                 st.success("✅ Response submitted!")
                 time.sleep(2)
             
                 # Reset for next round
                 reset_questions()
                 st.session_state.current_entity = None
+                st.session_state.selected_entity_arm = None
                 st.session_state.start_time = time.time()
                 st.session_state.submitting = False
                 st.session_state.scroll_to_top = True
