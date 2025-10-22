@@ -123,7 +123,8 @@ class DistributionPlot:
             cols=1,
             shared_xaxes=True,  # Keep the same scale for all
             vertical_spacing=0.02,
-            row_heights=[1/len(self.cols)]*len(self.cols)
+            # row_heights=[1/len(self.cols)]*len(self.cols)
+            row_heights=[0.35]*len(self.cols)
         )
         
         for i, col in enumerate(dataframe.columns):
@@ -189,7 +190,7 @@ class DistributionPlot:
             if explanation.replace("<br>", "").strip():  # only if there's text
                 self.fig.add_annotation(
                     text=explanation,
-                    x=1.2,  # slightly outside the plot area
+                    x=1.1,  # slightly outside the plot area
                     y=self.cols[i],
                     xref="paper",  # anchor to figure, not subplot
                     yref=f"y{i+1}",  # reference the subplot’s y-axis
@@ -267,7 +268,7 @@ class DistributionPlot:
                 x=1,
                 font=dict(size=14)
             ),
-            margin=dict(t=40, b=50, l=45, r=365),
+            margin=dict(t=40, b=50, l=45, r=500),
             height = 500,
         )
 
