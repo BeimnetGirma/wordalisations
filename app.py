@@ -349,7 +349,7 @@ def show_evaluation():
 
     # Centered description + questions
     
-    center_col = st.columns([1, 8, 1])[1]
+    center_col = st.columns([1, 9, 1])[1]
     with center_col:
         if entity_type == "person":
             st.subheader(f"Description text for job candidate {entity_name}:")
