@@ -123,7 +123,6 @@ class DistributionPlot:
             cols=1,
             shared_xaxes=True,  # Keep the same scale for all
             vertical_spacing=0.02,
-            # row_heights=[1/len(self.cols)]*len(self.cols)
             row_heights=[0.35]*len(self.cols)
         )
         
@@ -138,9 +137,7 @@ class DistributionPlot:
                     opacity=0.65,
                     side='positive',
                     showlegend = False,
-                    # hovertemplate=f"<b>{self.cols[i]}</b><br>Value: %{{x}}<br>Count: %{{y}}<extra></extra>"
                     hoverinfo="skip", hovertemplate=None,
-                    # hoveron="all",
                     points=False,
                 ),
                 row=i+1,
@@ -199,8 +196,6 @@ class DistributionPlot:
             if self.labels is not None:
                 left_label, right_label = self.labels.get(self.cols[i], ("", ""))
 
-
-
                 if left_label or right_label:
                     # Left-side label
                     
@@ -257,7 +252,7 @@ class DistributionPlot:
                 x=1,
                 font=dict(size=14)
             ),
-            #margin=dict(l=60, r=500, t=40, b=40),  
+            margin=dict(l=50, r=500, t=40, b=40),  
             autosize=False,
             height=400 + 5* len(self.cols),  # scales height with number of violins
             
