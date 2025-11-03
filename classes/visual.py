@@ -55,7 +55,7 @@ class DistributionPlot:
         st.plotly_chart(
             self.fig,
             config={"displayModeBar": False},
-            use_container_width=False,
+            use_container_width=True,
         )
 
     def _setup_axes(self):
@@ -250,7 +250,6 @@ class DistributionPlot:
             template="plotly_white",
             showlegend=True,
             font = dict(size=14),
-            # autosize=True,
             legend=dict(
                 yanchor="bottom",
                 y=-0.2,
@@ -258,8 +257,7 @@ class DistributionPlot:
                 x=1,
                 font=dict(size=14)
             ),
-            margin=dict(l=60, r=500, t=40, b=40),  
-            # height = 500,
+            #margin=dict(l=60, r=500, t=40, b=40),  
             autosize=False,
             height=400 + 5* len(self.cols),  # scales height with number of violins
             
