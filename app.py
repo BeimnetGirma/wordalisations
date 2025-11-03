@@ -119,6 +119,8 @@ def get_balanced_item(df_descriptions, conn_tracking):
         df["Type"].isin(types_with_overall_min)
         & (df["num_ratings"] == df["Type"].map(min_per_type))
     ]
+    # check st.session_state.seen to avoid already seen items
+    least_rated_type = least_rated_type[~least_rated_type.set_index(['Name', 'entity']).index.isin(st.session_state.seen)]
     selected_row = least_rated_type.sample(1).iloc[0]
     return selected_row
 
@@ -151,24 +153,19 @@ def show_intro():
     st.markdown("""
     Thank you for taking the time to participate in our study!  
 
-    We are conducting a study to evaluate the quality of LLM-generated descriptions for numerical data. We would greatly appreciate your help in assessing these descriptions we've generated using different approaches based on various criteria.         
+    We are conducting a study to evaluate the quality of LLM-generated descriptions for numerical data. We would greatly appreciate your help in assessing these descriptions.         
     """)
 
     st.markdown("""
-    In this evaluation, you will:
-    - Be shown a **plot** for a single entity (person, country, or player).  
-    - Be shown a **generated description** that should reflect what is being shown in the plot.  
-    - Be required to answer **four short questions** about the generated text regarding: 
-        1. Faithfulness – Does the description match the plot?  
-        2. Engagement – Is it engaging?  
-        3. Usefulness – Is it helpful for understanding what is being shown in the plot?  
-        4. Hallucinations – Are there unsupported claims in the text?  
-
     **How it works:**  
-    - Each page shows **one entity** along with its plot. The plot shows where the entity is located in the data space. For some entities, a tooltip with additional information may be available to the right of the plot describing how the entity stands out in a specific feature from others in the dataset. This information, if present,  is also available when you hover over the plot points. The plot, along with this additional information, make up the reference (or ground truth) about the entity.
-    - Below the plot, you will see the **generated description** for the entity. Please read the description and assess if and how it reflects the information shown in the plot.
-    - Answer the four questions about the description and click Submit. Your responses will be recorded and you will be shown a new entity to evaluate.  
-    - Feel free to evaluate as many as you like (we’d be grateful for at least one😀). You can leave anytime, no pressure 😅.  
+    Each page shows one subject and a chart about it.
+    The chart shows where the subject sits compared to others.
+    Any extra text you might see on the right or by hovering over the dots, explains what makes this subject special.
+
+    Below the chart, you’ll see a short description of the subject. Please read it and answer four quick questions about how well it matches the data being shown in the chart.
+    
+    Click Submit to move to the next subject.
+    You can rate as many as you like (even just one). No pressure — leave anytime.
 
     ⚠️ **Note:** We do not collect personal info aside from the questions we ask about you.  
     Your responses are anonymous and confidential.
@@ -288,6 +285,7 @@ def show_evaluation():
             all_items = list(df[['Name', 'entity']].itertuples(index=False, name=None))
             remaining = [item for item in all_items if item not in st.session_state.seen]
             if remaining:
+                reset_questions()
                 # st.session_state.current_entity = random.choice(remaining)
                 selected_row = get_balanced_item(df, conn_tracking)
                 st.session_state.current_entity = (selected_row['Name'], selected_row['entity'], selected_row['Type'], selected_row['LLMResponse'])
@@ -320,9 +318,11 @@ def show_evaluation():
         # st.session_state.current_entity = random.choice(remaining)
         selected_row = get_balanced_item(df, conn_tracking)
         st.session_state.current_entity = (selected_row['Name'], selected_row['entity'], selected_row['Type'], selected_row['LLMResponse'])
+        
 
-
-    st.session_state.seen.add(st.session_state.current_entity)
+    # add only the (Name, entity) pair to the seen set
+    name, entity = st.session_state.current_entity[:2]
+    st.session_state.seen.add((name, entity))
     entity_name, entity_type, evaluation_arm, llm_response = st.session_state.current_entity
 
     # Show reference plot
