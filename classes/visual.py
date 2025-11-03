@@ -55,7 +55,7 @@ class DistributionPlot:
         st.plotly_chart(
             self.fig,
             config={"displayModeBar": False},
-            use_container_width=True,
+            use_container_width=False,
         )
 
     def _setup_axes(self):
