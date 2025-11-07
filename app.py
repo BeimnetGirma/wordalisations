@@ -109,7 +109,10 @@ def reset_questions():
             del st.session_state[key]
     
 def get_balanced_item(df_descriptions, conn_tracking):
-    tracking_df = conn_tracking.read(ttl=0, worksheet="sample_tracking")
+    # tracking_df = conn_tracking.read(ttl=0, worksheet="sample_tracking")
+    tracking_df= read_from_google_sheets(conn_tracking, worksheet="sample_tracking")
+    if tracking_df is None:
+        return None
     df= df_descriptions.merge(tracking_df, on=['Name', 'entity', 'Type'], how='left')
     df['num_ratings']= df['num_ratings'].fillna(0)
     min_per_type = df.groupby("Type")["num_ratings"].min()
@@ -125,7 +128,8 @@ def get_balanced_item(df_descriptions, conn_tracking):
     return selected_row
 
 def update_tracking(conn_tracking, name, entity,type ):
-    tracking_df= conn_tracking.read(ttl=0, worksheet="sample_tracking")
+    # tracking_df= conn_tracking.read(ttl=0, worksheet="sample_tracking")
+    tracking_df= read_from_google_sheets(conn_tracking, worksheet="sample_tracking")
     # ensure necessary columns exist
     for col in ["Name", "entity", "Type", "num_ratings"]:
         if col not in tracking_df.columns:
@@ -142,7 +146,8 @@ def update_tracking(conn_tracking, name, entity,type ):
         new_row = {"Name": name, "entity": entity, "Type": type, "num_ratings": 1}
         tracking_df = pd.concat([tracking_df, pd.DataFrame([new_row])], ignore_index=True)
     # update the worksheet
-    conn_tracking.update(worksheet="sample_tracking", data=tracking_df)
+    # conn_tracking.update(worksheet="sample_tracking", data=tracking_df)
+    write_to_google_sheets(conn_tracking, "sample_tracking", tracking_df)
     
 # ------------------------------
 # Intro Page
@@ -243,11 +248,10 @@ def show_demographics():
             "timestamp": pd.Timestamp.now().isoformat()
         }])
         conn = st.connection("gsheets", type=GSheetsConnection)
-        existing_data = conn.read(ttl=0, worksheet="Demographic_Info")
-        updated_data = pd.concat([existing_data, demographics_df], ignore_index=True)
-        conn.update(worksheet="Demographic_Info", data=updated_data)
-
-
+        # existing_data = conn.read(ttl=0, worksheet="Demographic_Info")
+        # updated_data = pd.concat([existing_data, demographics_df], ignore_index=True)
+        # conn.update(worksheet="Demographic_Info", data=updated_data)
+        write_to_google_sheets(conn, "Demographic_Info", demographics_df)
         st.session_state.get_demographics = False
         st.session_state.show_evaluation = True
         st.show_intro = False
@@ -255,7 +259,60 @@ def show_demographics():
         # get_demographics
         
 
+def write_to_google_sheets(conn, worksheet, data):
+    # try to save with retries on timeout
+        max_retries = 5
+        delay = 5
+        for attempt in range(1, max_retries + 1):
+            try:
+                conn = st.connection("gsheets", type=GSheetsConnection)
+                existing_data = conn.read(ttl=0, worksheet=worksheet)
+                updated_data = pd.concat([existing_data, data], ignore_index=True)
+                conn.update(worksheet=worksheet, data=updated_data)
+                break
+            except Exception as e:
+                # detect timeout-like errors
+                quota_reached = False
+                if 'quota' in str(e).lower() or 'timed out' in str(e).lower():
+                    quota_reached = True
 
+                if quota_reached and attempt <= max_retries:
+                    msg = st.warning(f"Google Sheets API quota reached, retrying ({attempt}/{max_retries})...")
+                    time.sleep(delay)
+                    msg.empty()
+                    delay *= 2
+                    continue
+                if quota_reached:
+                    st.error("It seems like the Google Sheets API quota has been reached. Please try again in 1 minute.")
+                else:
+                    st.error(f"Error due to high usage: {e}")
+                break
+def read_from_google_sheets(conn, worksheet):
+    # try to read with retries on timeout
+        max_retries = 5
+        delay = 3
+        for attempt in range(1, max_retries + 1):
+            try:
+                conn = st.connection("gsheets", type=GSheetsConnection)
+                data = conn.read(ttl=0, worksheet=worksheet)
+                return data
+            except Exception as e:
+                # detect timeout-like errors
+                quota_reached = False
+                if 'quota' in str(e).lower() or 'timed out' in str(e).lower():
+                    quota_reached = True
+
+                if quota_reached and attempt <= max_retries:
+                    msg = st.warning(f"Google Sheets API quota reached, retrying ({attempt}/{max_retries})...")
+                    time.sleep(delay)
+                    msg.empty()
+                    delay *= 2
+                    continue
+                if quota_reached:
+                    st.error("It seems like the Google Sheets API quota has been reached. Please try again in 1 minute.")
+                else:
+                    st.error(f"Error due to high usage: {e}")
+                break
 # ------------------------------
 # Evaluation Page
 # ------------------------------
@@ -288,7 +345,8 @@ def show_evaluation():
                 reset_questions()
                 # st.session_state.current_entity = random.choice(remaining)
                 selected_row = get_balanced_item(df, conn_tracking)
-                st.session_state.current_entity = (selected_row['Name'], selected_row['entity'], selected_row['Type'], selected_row['LLMResponse'])
+                if selected_row is not None:
+                    st.session_state.current_entity = (selected_row['Name'], selected_row['entity'], selected_row['Type'], selected_row['LLMResponse'])
 
             else:
                 st.warning("✅ You have completed all evaluations. Thank you!")
@@ -317,7 +375,8 @@ def show_evaluation():
     if "current_entity" not in st.session_state or st.session_state.current_entity is None:
         # st.session_state.current_entity = random.choice(remaining)
         selected_row = get_balanced_item(df, conn_tracking)
-        st.session_state.current_entity = (selected_row['Name'], selected_row['entity'], selected_row['Type'], selected_row['LLMResponse'])
+        if selected_row is not None:
+            st.session_state.current_entity = (selected_row['Name'], selected_row['entity'], selected_row['Type'], selected_row['LLMResponse'])
         
 
     # add only the (Name, entity) pair to the seen set
@@ -412,9 +471,12 @@ def show_evaluation():
                 }
 
                 # Append new row (instead of full read+concat)
-                existing = conn.read(ttl=0)
+                # existing = conn.read(ttl=0)
+                existing = read_from_google_sheets(conn, worksheet="Sheet1")
+
                 update = pd.concat([existing, pd.DataFrame([response_data])], ignore_index=True)
-                conn.update(worksheet="Sheet1", data=update)
+                # conn.update(worksheet="Sheet1", data=update)
+                write_to_google_sheets(conn, "Sheet1", update)
                 update_tracking(conn_tracking, entity_name, entity_type, evaluation_arm)
                 st.success("✅ Response submitted!")
                 # time.sleep(2)
