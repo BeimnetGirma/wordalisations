@@ -146,7 +146,6 @@ def update_tracking(conn_tracking, name, entity,type ):
         new_row = {"Name": name, "entity": entity, "Type": type, "num_ratings": 1}
         tracking_df = pd.concat([tracking_df, pd.DataFrame([new_row])], ignore_index=True)
     # update the worksheet
-    # conn_tracking.update(worksheet="sample_tracking", data=tracking_df)
     write_to_google_sheets(conn_tracking, "sample_tracking", tracking_df)
     
 # ------------------------------
@@ -248,10 +247,9 @@ def show_demographics():
             "timestamp": pd.Timestamp.now().isoformat()
         }])
         conn = st.connection("gsheets", type=GSheetsConnection)
-        # existing_data = conn.read(ttl=0, worksheet="Demographic_Info")
-        # updated_data = pd.concat([existing_data, demographics_df], ignore_index=True)
-        # conn.update(worksheet="Demographic_Info", data=updated_data)
-        write_to_google_sheets(conn, "Demographic_Info", demographics_df)
+        existing_data = read_from_google_sheets(conn, worksheet="Demographic_Info")
+        updated_data = pd.concat([existing_data, demographics_df], ignore_index=True)
+        write_to_google_sheets(conn, "Demographic_Info", updated_data)
         st.session_state.get_demographics = False
         st.session_state.show_evaluation = True
         st.show_intro = False
@@ -265,10 +263,7 @@ def write_to_google_sheets(conn, worksheet, data):
         delay = 5
         for attempt in range(1, max_retries + 1):
             try:
-                conn = st.connection("gsheets", type=GSheetsConnection)
-                existing_data = conn.read(ttl=0, worksheet=worksheet)
-                updated_data = pd.concat([existing_data, data], ignore_index=True)
-                conn.update(worksheet=worksheet, data=updated_data)
+                conn.update(worksheet=worksheet, data=data)
                 break
             except Exception as e:
                 # detect timeout-like errors
