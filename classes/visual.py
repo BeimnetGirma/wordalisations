@@ -115,15 +115,15 @@ class DistributionPlot:
         df_entity_rank = self.entity.iloc[-len(self.cols):]
 
         # Color palette
-        colors = px.colors.qualitative.Set2
+        colors = px.colors.qualitative.Dark2 #px.colors.qualitative.Set2
 
         # Create subplots
         self.fig = make_subplots(
             rows=len(self.cols),
             cols=1,
             shared_xaxes=True,  # Keep the same scale for all
-            vertical_spacing=0.01,
-            row_heights=[1/len(self.cols)]*len(self.cols)
+            vertical_spacing=0.02,
+            row_heights=[0.35]*len(self.cols)
         )
         
         for i, col in enumerate(dataframe.columns):
@@ -137,9 +137,8 @@ class DistributionPlot:
                     opacity=0.65,
                     side='positive',
                     showlegend = False,
-                    # hovertemplate=f"<b>{self.cols[i]}</b><br>Value: %{{x}}<br>Count: %{{y}}<extra></extra>"
                     hoverinfo="skip", hovertemplate=None,
-                    # hoveron="all",
+                    points=False,
                 ),
                 row=i+1,
                 col=1
@@ -170,25 +169,13 @@ class DistributionPlot:
                     row=i+1,
                     col=1
                     )
-            # self.fig.add_annotation(
-            #     text=explanation,
-            #     x=1.5, y=0.75,   # relative placement inside subplot
-            #     xref=f"x{i+2} domain",
-            #     yref=f"y{i+2} domain",
-            #     showarrow=False,
-            #     font=dict(size=12, color="black"),
-            #     align="center",
-            #     bgcolor="rgba(237,222,250,0.3)",  # same color palette you used
-            #     bordercolor="#9340ff",
-            #     borderwidth=1,
-            #     )
 
 
             # --- Add explanation text to the right side of each violin, if it exists ---
             if explanation.replace("<br>", "").strip():  # only if there's text
                 self.fig.add_annotation(
                     text=explanation,
-                    x=1.04,  # slightly outside the plot area
+                    x=1.15,  # just outside the plot area but still within figure bounds
                     y=self.cols[i],
                     xref="paper",  # anchor to figure, not subplot
                     yref=f"y{i+1}",  # reference the subplot’s y-axis
@@ -202,13 +189,12 @@ class DistributionPlot:
                     borderwidth=1,
                     borderpad=4
                 )
+                
 
 
              # Add left/right labels --
             if self.labels is not None:
                 left_label, right_label = self.labels.get(self.cols[i], ("", ""))
-
-
 
                 if left_label or right_label:
                     # Left-side label
@@ -249,17 +235,16 @@ class DistributionPlot:
                         xanchor="center",
                         yanchor="bottom"
                     )
+            
+            
 
 
             
         # Update layout
         self.fig.update_layout(
             template="plotly_white",
-            # title=dict(text="<b>Distribution of Metrics</b>",x=0.50, font=dict(size=14)),
             showlegend=True,
-            # margin=dict(t=50, b=50, l=45, r=25),
             font = dict(size=14),
-            # autosize=True,
             legend=dict(
                 yanchor="bottom",
                 y=-0.2,
@@ -267,10 +252,16 @@ class DistributionPlot:
                 x=1,
                 font=dict(size=14)
             ),
-            margin=dict(t=50, b=50, l=45, r=350)
+            margin=dict(l=90, r=415, t=40, b=40),  
+            autosize=False,
+            height=400 + 5* len(self.cols),  # scales height with number of violins
+            width=800
+            
         )
 
-    
+        # make ALL subplots use the same x-domain
+        for i in range(1, len(self.cols) + 1):
+            self.fig.update_xaxes(domain=[0, 0.8], row=i, col=1)
         # Add grid & font styling
         self.fig.update_xaxes(showgrid=True, gridcolor="rgba(200,200,200,0.3)")
         # self.fig.update_yaxes(showgrid=False)

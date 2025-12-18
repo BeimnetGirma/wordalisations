@@ -12,7 +12,7 @@ from streamlit_gsheets import GSheetsConnection
 from classes.explainer import CountryExplanationProvider, PersonExplanationProvider
 from classes.data_source import PlayerStats, PersonStat, CountryStats
 from classes.data_point import Player
-from classes.visual import DistributionPlot, RadarPlot
+from classes.visual import DistributionPlot
 from utils.page_components import add_common_page_elements
 import streamlit.components.v1 as components
 
@@ -55,11 +55,11 @@ def show_entity_plots(entity_type, entity_name, metrics):
         dataset.calculate_statistics(metrics=metrics)
         explanation_provider = PersonExplanationProvider(dataset.get_questions())
         person_plot_labels={
-            "extraversion": ("Introverted", "Extraverted"),
-            "neuroticism": ("Calm", "Nervous"),
-            "agreeableness": ("Competitive", "Cooperative"),
-            "conscientiousness": ("Easy-going", "Hard-working"),
-            "openness": ("Practical", "Imaginative")
+            "extraversion": ("Solitary & Reserved", "Outgoing & Energetic"),
+            "neuroticism": ("Resilient & Confident", "Sensitive & Nervous"),
+            "agreeableness": ("Critical & Rational", "Friendly & Compassionate"),
+            "conscientiousness": ("Extravagant & Careless", "Efficient & Organized"),
+            "openness": ("Consistent & Cautious", "Inventive & Curious")
 
         }
         visual_distribution= DistributionPlot(dataset, entity, metrics, explanation_provider=explanation_provider, labels=person_plot_labels, selected_entity=entity_name)
@@ -91,7 +91,7 @@ def show_entity_plots(entity_type, entity_name, metrics):
         
     
 
-    center_col = st.columns([1, 6, 1])[1]
+    center_col = st.columns([0.2, 10, 0.2])[1]
     with center_col:
         visual_distribution.show()
 
@@ -108,32 +108,71 @@ def reset_questions():
         if key in st.session_state:
             del st.session_state[key]
     
+def get_balanced_item(df_descriptions, conn_tracking):
+    # tracking_df = conn_tracking.read(ttl=0, worksheet="sample_tracking")
+    tracking_df= read_from_google_sheets(conn_tracking, worksheet="sample_tracking")
+    if tracking_df is None:
+        return None
+    df= df_descriptions.merge(tracking_df, on=['Name', 'entity', 'Type'], how='left')
+    df['num_ratings']= df['num_ratings'].fillna(0)
+    min_per_type = df.groupby("Type")["num_ratings"].min()
+    overall_min = min_per_type.min()
+    types_with_overall_min = min_per_type[min_per_type == overall_min].index.tolist()
+    least_rated_type = df[
+        df["Type"].isin(types_with_overall_min)
+        & (df["num_ratings"] == df["Type"].map(min_per_type))
+    ]
+    # check st.session_state.seen to avoid already seen items
+    least_rated_type = least_rated_type[~least_rated_type.set_index(['Name', 'entity']).index.isin(st.session_state.seen)]
+    selected_row = least_rated_type.sample(1).iloc[0]
+    return selected_row
 
+def update_tracking(conn_tracking, name, entity,type ):
+    # tracking_df= conn_tracking.read(ttl=0, worksheet="sample_tracking")
+    tracking_df= read_from_google_sheets(conn_tracking, worksheet="sample_tracking")
+    # ensure necessary columns exist
+    for col in ["Name", "entity", "Type", "num_ratings"]:
+        if col not in tracking_df.columns:
+            tracking_df[col] = pd.Series(dtype="int" if col == "num_ratings" else "object")
+
+    # locate matching row
+    mask = (tracking_df["Name"] == name) & (tracking_df["entity"] == entity) & (tracking_df["Type"] == type)
+
+    if mask.any():
+        # increment existing count (handle NaNs)
+        tracking_df.loc[mask, "num_ratings"] = tracking_df.loc[mask, "num_ratings"].fillna(0).astype(int) + 1
+    else:
+        # append new tracking row
+        new_row = {"Name": name, "entity": entity, "Type": type, "num_ratings": 1}
+        tracking_df = pd.concat([tracking_df, pd.DataFrame([new_row])], ignore_index=True)
+    # update the worksheet
+    write_to_google_sheets(conn_tracking, "sample_tracking", tracking_df)
+    
 # ------------------------------
 # Intro Page
 # ------------------------------
 def show_intro():
-    st.title("Welcome to the Evaluation Study 🎉")
+    st.title("Welcome 🎉")
 
     st.markdown("""
     Thank you for taking the time to participate in our study!  
 
-    In this evaluation, you will:
-    - Be shown a **plot** for a single entity (person, country, or player).  
-    - Be shown a **generated description** of that plot.  
-    - Answer **four short questions**:  
-        1. Faithfulness – Does the description match the plot?  
-        2. Engagement – Is it engaging?  
-        3. Usefulness – Is it helpful for understanding?  
-        4. Hallucinations – Are there unsupported claims?  
+    We are conducting a study to evaluate the quality of LLM-generated descriptions for numerical data. We would greatly appreciate your help in assessing these descriptions.         
+    """)
 
+    st.markdown("""
     **How it works:**  
-    - Each page shows **one entity** with its plot + description.  
-    - Answer the four questions, then submit.  
-    - You can evaluate as many as you like (we’d be grateful for at least one).  
-    - You are free to exit anytime.  
+    Each page shows one subject and a chart about it.
+    The chart shows where the subject sits compared to others.
+    Any extra text you might see on the right or by hovering over the dots, explains what makes this subject special.
 
-    ⚠️ **Note:** We do not collect personal info, only anonymous session activity.
+    Below the chart, you’ll see a short description of the subject. Please read it and answer four quick questions about how well it matches the data being shown in the chart.
+    
+    Click Submit to move to the next subject.
+    You can rate as many as you like (even just one). No pressure — leave anytime.
+
+    ⚠️ **Note:** We do not collect personal info aside from the questions we ask about you.  
+    Your responses are anonymous and confidential.
     """)
 
     st.button("Start Evaluation ✅", on_click=lambda: st.session_state.update(show_intro=False))
@@ -155,6 +194,14 @@ def show_demographics():
     We do not collect any personal information beyond what you provide here.  
     You can skip any question you prefer not to answer.  
     """)
+
+    st.markdown("""
+    <style>
+    div[data-baseweb="input"] > div {
+        width: 100% !important;
+    }
+    </style>
+    """, unsafe_allow_html=True)
 
     age_input = st.number_input("1. How old are you? (optional)", min_value=10, max_value=120, step=1, value=18)
     st.session_state.age = age_input if age_input else None
@@ -200,11 +247,9 @@ def show_demographics():
             "timestamp": pd.Timestamp.now().isoformat()
         }])
         conn = st.connection("gsheets", type=GSheetsConnection)
-        existing_data = conn.read(ttl=0, worksheet="Demographic_Info")
+        existing_data = read_from_google_sheets(conn, worksheet="Demographic_Info")
         updated_data = pd.concat([existing_data, demographics_df], ignore_index=True)
-        conn.update(worksheet="Demographic_Info", data=updated_data)
-
-
+        write_to_google_sheets(conn, "Demographic_Info", updated_data)
         st.session_state.get_demographics = False
         st.session_state.show_evaluation = True
         st.show_intro = False
@@ -212,7 +257,57 @@ def show_demographics():
         # get_demographics
         
 
+def write_to_google_sheets(conn, worksheet, data):
+    # try to save with retries on timeout
+        max_retries = 5
+        delay = 5
+        for attempt in range(1, max_retries + 1):
+            try:
+                conn.update(worksheet=worksheet, data=data)
+                break
+            except Exception as e:
+                # detect timeout-like errors
+                quota_reached = False
+                if 'quota' in str(e).lower() or 'timed out' in str(e).lower():
+                    quota_reached = True
 
+                if quota_reached and attempt <= max_retries:
+                    msg = st.warning(f"Google Sheets API quota reached, retrying ({attempt}/{max_retries})...")
+                    time.sleep(delay)
+                    msg.empty()
+                    delay *= 2
+                    continue
+                if quota_reached:
+                    st.error("It seems like the Google Sheets API quota has been reached. Please try again in 1 minute.")
+                else:
+                    st.error(f"Error due to high usage: {e}")
+                break
+def read_from_google_sheets(conn, worksheet):
+    # try to read with retries on timeout
+        max_retries = 5
+        delay = 3
+        for attempt in range(1, max_retries + 1):
+            try:
+                conn = st.connection("gsheets", type=GSheetsConnection)
+                data = conn.read(ttl=0, worksheet=worksheet)
+                return data
+            except Exception as e:
+                # detect timeout-like errors
+                quota_reached = False
+                if 'quota' in str(e).lower() or 'timed out' in str(e).lower():
+                    quota_reached = True
+
+                if quota_reached and attempt <= max_retries:
+                    msg = st.warning(f"Google Sheets API quota reached, retrying ({attempt}/{max_retries})...")
+                    time.sleep(delay)
+                    msg.empty()
+                    delay *= 2
+                    continue
+                if quota_reached:
+                    st.error("It seems like the Google Sheets API quota has been reached. Please try again in 1 minute.")
+                else:
+                    st.error(f"Error due to high usage: {e}")
+                break
 # ------------------------------
 # Evaluation Page
 # ------------------------------
@@ -231,16 +326,23 @@ def show_evaluation():
     
     df = pd.read_csv("evaluation/human-evaluation/data/all_descriptions.csv")
     conn = st.connection("gsheets", type=GSheetsConnection)
+    conn_tracking= st.connection("gsheets", type=GSheetsConnection)
     # add a get a different question button
 
     # Right-align the button using columns
     button_col = st.columns([7, 2])[1]
     with button_col:
         def get_different_question():
+            # st.session_state.selected_entity_arm = None
             all_items = list(df[['Name', 'entity']].itertuples(index=False, name=None))
             remaining = [item for item in all_items if item not in st.session_state.seen]
             if remaining:
-                st.session_state.current_entity = random.choice(remaining)
+                reset_questions()
+                # st.session_state.current_entity = random.choice(remaining)
+                selected_row = get_balanced_item(df, conn_tracking)
+                if selected_row is not None:
+                    st.session_state.current_entity = (selected_row['Name'], selected_row['entity'], selected_row['Type'], selected_row['LLMResponse'])
+
             else:
                 st.warning("✅ You have completed all evaluations. Thank you!")
                 st.stop()
@@ -265,16 +367,20 @@ def show_evaluation():
     if not remaining:
         st.write("✅ You have completed all evaluations. Thank you!")
         st.stop()
-
     if "current_entity" not in st.session_state or st.session_state.current_entity is None:
-        st.session_state.current_entity = random.choice(remaining)
+        # st.session_state.current_entity = random.choice(remaining)
+        selected_row = get_balanced_item(df, conn_tracking)
+        if selected_row is not None:
+            st.session_state.current_entity = (selected_row['Name'], selected_row['entity'], selected_row['Type'], selected_row['LLMResponse'])
+        
 
-    st.session_state.seen.add(st.session_state.current_entity)
-    entity_name, entity_type = st.session_state.current_entity
-    row = df[(df['Name'] == entity_name) & (df['entity'] == entity_type)].iloc[0]
+    # add only the (Name, entity) pair to the seen set
+    name, entity = st.session_state.current_entity[:2]
+    st.session_state.seen.add((name, entity))
+    entity_name, entity_type, evaluation_arm, llm_response = st.session_state.current_entity
 
     # Show reference plot
-    st.subheader(f"Ground Truth Reference for {entity_name} ({entity_type})")
+    st.subheader(f"Data for person {entity_name}" if entity_type == "person" else f"Data for {entity_name} ({entity_type})")
     if entity_type == "person":
         metrics = ["extraversion", "neuroticism", "agreeableness", "conscientiousness", "openness"]
     elif entity_type == "player":
@@ -297,16 +403,16 @@ def show_evaluation():
 
     # Centered description + questions
     
-    center_col = st.columns([1, 8, 1])[1]
+    center_col = st.columns([1, 9, 1])[1]
     with center_col:
         if entity_type == "person":
-            st.subheader("Here is a description for a job candidate:")
+            st.subheader(f"Description text for job candidate {entity_name}:")
         elif entity_type == "country":
-            st.subheader(f"Here is a description for {entity_name}:")
+            st.subheader(f"Description text for {entity_name}:")
         else:
-            st.subheader(f"Here is a description of the football player {entity_name}:")
+            st.subheader(f"Description text for football player {entity_name}:")
         
-        st.write(row.LLMResponse)
+        st.write(llm_response)
 
         st.subheader("Questions")
         vote_question("faithfulness", "Does the text accurately represent the plot?", 
@@ -315,14 +421,14 @@ def show_evaluation():
                       ["Not engaging", "Somewhat engaging", "Engaging", "Very engaging"], 2)
 
         if entity_type == "person":
-            usefulness_q = "How useful is this description for a hiring decision?"
+            usefulness_q = "How useful is this description for making a hiring decision?"
         elif entity_type == "country":
-            usefulness_q = "How useful is this description for understanding the world value?"
+            usefulness_q = "How useful is this description for understanding the country's value system?"
         else:
-            usefulness_q = "How useful is this description for learning about a football player?"
+            usefulness_q = "How useful is this description for scouting players?"
 
         vote_question("usefulness", usefulness_q, 
-                      ["Very unuseful", "Unuseful", "Useful", "Very useful"], 3)
+                      ["Not useful", "Partially useful", "Useful", "Very useful"], 3)
 
         vote_question("hallucination", "Does the text contain hallucinations (claims not supported by the figures above)?", ["No", "Yes"], 4)
 
@@ -348,7 +454,8 @@ def show_evaluation():
                 response_data = {
                     "rater_id": st.session_state.rater_id,
                     "entity": entity_type,
-                    "entity_id": row.Name,
+                    "entity_id": entity_name,
+                    "description_arm": evaluation_arm,
                     "faithfulness": st.session_state.faithfulness,
                     "engagement": st.session_state.engagement,
                     "usefulness": st.session_state.usefulness,
@@ -359,16 +466,20 @@ def show_evaluation():
                 }
 
                 # Append new row (instead of full read+concat)
-                existing = conn.read(ttl=0)
-                update = pd.concat([existing, pd.DataFrame([response_data])], ignore_index=True)
-                conn.update(worksheet="Sheet1", data=update)
+                # existing = conn.read(ttl=0)
+                existing = read_from_google_sheets(conn, worksheet="Sheet1")
 
+                update = pd.concat([existing, pd.DataFrame([response_data])], ignore_index=True)
+                # conn.update(worksheet="Sheet1", data=update)
+                write_to_google_sheets(conn, "Sheet1", update)
+                update_tracking(conn_tracking, entity_name, entity_type, evaluation_arm)
                 st.success("✅ Response submitted!")
-                time.sleep(2)
+                # time.sleep(2)
             
                 # Reset for next round
                 reset_questions()
                 st.session_state.current_entity = None
+                # st.session_state.selected_entity_arm = None
                 st.session_state.start_time = time.time()
                 st.session_state.submitting = False
                 st.session_state.scroll_to_top = True
