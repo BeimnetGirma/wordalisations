@@ -1,7 +1,7 @@
-# Model cards
+# Prompt cards
 
-The model cards for each application can be found here:
+The prompt cards for each application can be found here:
 
-- [Football Scout Model Card](model-card-football-scout.md)
-- [Personality Test Model Card](model-card-personality-test.md)
-- [International Survey Model Card](model-card-wvs-chat.md)
+- [Football Scout Prompt Card](prompt-card-football-scout.md)
+- [Personality Test Prompt Card](prompt-card-personality-test.md)
+- [International Survey Prompt Card](prompt-card-wvs-chat.md)
