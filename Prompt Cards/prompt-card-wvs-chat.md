@@ -178,6 +178,26 @@ In a new chat instance, we prompt the LLM to reconstruct the data from a given W
 This approach has some weaknesses, including relaying on the LLM to generate accurate reconstructions. In cases where the Wordalisations are more formulaic, this type of evaluation work can well, as was the case here. However, in cases where the texts are more engaging the reconstruction is more nuanced, see the football scout application.
 
 
+For human evaluation, we compared *wordalisation* to two alternative methods: a *control*, in which the model is asked to describe an entity without access to numerical data, and a *statistical* method, in which the model is provided with z-scores and asked to generate a description based on these values.
+In the international survey and football scout examples, the LLM relied on its training data to write descriptions about the country or football player, whereas for the personality test example no fallback data was available. Using these three methods, we generated descriptions for 30 entities—10 from each example—resulting in a total of 90 texts.
+
+Human raters were recruited through social media posts and directed to an online application ([https://wordalisations-evaluation.streamlit.app/](https://wordalisations-evaluation.streamlit.app/)). Raters were presented with one entity at a time, along with its corresponding visualisation and a description generated using either the control, statistical, or wordalisation method. To prevent direct comparisons and learning effects, each rater saw only one strategy per entity and never evaluated multiple descriptions of the same entity. Raters could evaluate as many descriptions as they wished and could stop at any point.
+
+For each description, raters were asked to assess:
+- the faithfulness of the description to the visualisation,
+- its engagement,
+- its usefulness for understanding or decision-making, and
+- whether it contained hallucinations, defined as unsupported or fabricated claims.
+
+Responses were collected using ordinal Likert-style scales, with optional free-text comments. The evaluation interface presented one description per page, and a new entity–method pair was sampled immediately after submission. No personally identifiable information was collected; participants were informed of the study purpose and their right to withdraw at any time.
+
+In total, we collected 121 responses from 26 unique individuals, covering 42 texts from the control prompt, 40 texts from the statistical prompt, and 40 texts from the wordalisation prompt.
+The figure 4 shows that the wordalisation and statistical texts vastly outperformed the control text in terms of faithfulness and usefulness ($\chi^2 = 71.00$ for faithfulness and $\chi^2 = 40.50$ for usefulness, both $p < 0.001$). Engagement also differed significantly across all methods ($\chi^2 = 13.93$, $p = 0.03$).
+Importantly, when comparing only the statistical and wordalisation texts, there was no significant difference in faithfulness ($\chi^2 = 1.11$, $p = 0.77$) or usefulness ($\chi^2 = 0.12$, $p = 0.99$). However, a significant difference was observed for engagement ($\chi^2 = 8.43$, $p = 0.04$), with participants preferring wordalisation over statistical descriptions.
+
+![Evaluation](https://github.com/amandinecaut/wordalisation/blob/3a7dd626ea644eb459d288a3662311a5a2145bd5/Prompt%20Cards/imgs/votes_percentage_per_metric.png)
+Figure 4: Human evaluation of three text variants (control, statistical, and wordalisation) across three metrics: faithfulness, engagement, and usefulness. Percentages of categorical ratings are shown for each text variant.
+
 ## Data security
 - **Internet Use**: The prompt requires the API access of the LLM.
 - **Offline adaptability**: Wordalisation can be adapt to an offline version.
