@@ -136,7 +136,7 @@ Table 4: Example of the 'constructed description' and the 'generated description
 The figure below summarises the wordalisation prompting methodology. The "Tell it who is it", "Tell is what it knows", "Tell is what data to use" and "Tell it how to answer" steps are discussed in the [Context](#context) section and correspond to task-specific information and instructions. The raw data, data preprocessing and statistical model (z-scores) are documented in section [Dataset](#dataset). 
 
 
-![wordalisation architecture](https://github.com/amandinecaut/wordalisation/blob/148922e7b179b20398492736b1d2096ce368234d/Prompt%20Cards/imgs/wordalisation_architecture.png)
+![wordalisation architecture](https://github.com/amandinecaut/wordalisation/blob/f4ad8d16cb66bc4c6515019b944b2f1c71594c7b/Prompt%20Cards/imgs/wordalisation_architecture.png)
 
 ![wordalisation architecture](Prompt Cards/imgs/wordalisation_architecture.png)
 
