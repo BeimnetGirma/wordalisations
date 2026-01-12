@@ -11,7 +11,7 @@ Jump to section:
 
 - [Intended use](#intended-use)
 - [Model details](#model-details)
-- [Retrieved dataset](#retrieved-dataset)
+- [Dataset](#dataset)
 - [Context](#context)
 - [Prompt architecture](#prompt-architecture)
 - [Factors](#factors)
@@ -34,7 +34,7 @@ The *primary use case* of this wordalisation is educational. It shows how to con
 - **References**: [GPT-4o System Card](https://arxiv.org/abs/2410.21276)   
 - **Contact point**: Amandine Caut, available at amandine.caut@math.uu.se
 
-## Retrieved Dataset
+## Dataset
 The dataset used in this project was sourced from Kaggle's open dataset repository [www.kaggle.com/datasets/tunguz/big-five-personality-test], accessed November 2025. It consists of 1,015,342 questionnaire responses, collected online by Open Psychometrics. Respondents answered questions on a scale from 1 to 5, where: 1 = Strongly Disagree, 2 = Disagree, 3 = Neutral, 4 = Agree, 5 = Strongly Agree.
 
 The dataset goes to a preprocessing cleaning which is handled in the data\_source.py script.
@@ -133,7 +133,7 @@ Table 4: Example of the 'constructed description' and the 'generated description
 
 ## Prompt architecture
 
-The figure below summarises the wordalisation prompting methodology. The "Tell it who is it", "Tell is what it knows", "Tell is what data to use" and "Tell it how to answer" steps are discussed in the [Context](#context) section and correspond to task-specific information and instructions. The raw data, data preprocessing and statistical model (z-scores) are documented in section [Retrieved Dataset](#retrieved-dataset). 
+The figure below summarises the wordalisation prompting methodology. The "Tell it who is it", "Tell is what it knows", "Tell is what data to use" and "Tell it how to answer" steps are discussed in the [Context](#context) section and correspond to task-specific information and instructions. The raw data, data preprocessing and statistical model (z-scores) are documented in section [Dataset](#dataset). 
 
 
 ![wordalisation architecture](https://github.com/amandinecaut/wordalisation/blob/148922e7b179b20398492736b1d2096ce368234d/Prompt%20Cards/imgs/wordalisation_architecture.png)

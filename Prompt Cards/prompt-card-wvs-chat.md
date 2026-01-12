@@ -10,7 +10,7 @@ Jump to section:
 
 - [Intended use](#intended-use)
 - [Model details](#model-details)
-- [Retrieved dataset](#retrieved-dataset)
+- [Dataset](#dataset)
 - [Context](#context)
 - [Prompt architecture](#prompt-architecture)
 - [Factors](#factors)
@@ -41,7 +41,7 @@ We would also strongly oppose the generalization or stereotyping of any group of
 
 Our implementation supports both GPT4o and ChatGPT and related APIs, as well as Gemini API. Since these language model's training data included text about these countries, this knowledge will likely effect both the initial response and subsequent queries within the same chat. This means that some aspects of the answers may come from data external to that in the provided dataframe. 
 
-## Retrieved Dataset
+## Dataset
 
 The data used in this project was constructed from the [World Value Survey Wave 7 (2017-2022)](https://www.worldvaluessurvey.org/WVSDocumentationWV7.jsp). The data consists of coded answers to a questionnaire which can be found at the same link. The WVS questionnaire was taken by participants from 62 countries and 4 regions (Hong Kong, Macao, Northern Ireland and Puerto Rico) with sample sizes varying from 447 in Northern Ireland to 4018 in Canada. It is clear from the map shown in Figure 1 that the data is not uniformly distributed across the globe, with the number of sampled African and European countries being especially low.
 
@@ -132,7 +132,7 @@ In addition to the factor z-score wordalisation, we also provided information ab
 
 ## Prompt architecture
 
-The figure below summarises the wordalisation prompting methodology. The "Tell it who is it", "Tell is what it knows", "Tell is what data to use" and "Tell it how to answer" steps are discussed in the [Context](#context) section and correspond to task-specific information and instructions. The raw data, data preprocessing and statistical model (z-scores) are documented in section [Retrieved Dataset](#retrieved-dataset). 
+The figure below summarises the wordalisation prompting methodology. The "Tell it who is it", "Tell is what it knows", "Tell is what data to use" and "Tell it how to answer" steps are discussed in the [Context](#context) section and correspond to task-specific information and instructions. The raw data, data preprocessing and statistical model (z-scores) are documented in section [Dataset](#dataset). 
 
 ![wordalisation architecture](https://github.com/amandinecaut/wordalisation/blob/148922e7b179b20398492736b1d2096ce368234d/Prompt%20Cards/imgs/wordalisation_architecture.png)
 
@@ -142,7 +142,7 @@ Figure 0: Prompt architecture of the wordalisation process
 
 ## Factors
 
-The World Value Survey data and derived factors, discussed in section [Retrieved Dataset][#retrieved-dataset], relate to 66 countries that took part in the WVS "wave 7" 2017-2022 survey. We would like to state that any reports or chats about countries not included in the survey are not guaranteed to hold any merit. We also note that the participants of the "wave 7" survey constitute only a small sample of the population of each country, see Figures 1 and 2. Therefore, the values and statements presented in the app should not be considered representative of the entire population of any given country.
+The World Value Survey data and derived factors, discussed in section [Dataset][#dataset], relate to 66 countries that took part in the WVS "wave 7" 2017-2022 survey. We would like to state that any reports or chats about countries not included in the survey are not guaranteed to hold any merit. We also note that the participants of the "wave 7" survey constitute only a small sample of the population of each country, see Figures 1 and 2. Therefore, the values and statements presented in the app should not be considered representative of the entire population of any given country.
 
 ![WVS coverage](https://github.com/amandinecaut/wordalisation/blob/58ea0b101a197190fa604bd3a66d51417fc7f9ea/Prompt%20Cards/imgs/sample_size_map.png)
 
