@@ -28,10 +28,7 @@ displaytext = (
    """
    This platform serves as a demo for Wordalisation, a context engineering approach for representing data in words.
 
-The context engineering flow was first presented in the paper [Representing Data in Words](https://arxiv.org/abs/2503.15509).
-
-This demo builds on the work of the Twelve team (https://github.com/soccermatics/twelve-gpt-educational
-) and showcases three example applications:
+This demo showcases three example applications:
 
 Football Scout Chat – describes players who played as strikers for at least 300 minutes in the 2017–18 Premier League season. Users can explore player performance metrics, compare players, and ask specific questions.
 
@@ -53,9 +50,6 @@ Once you have made changes to the code, save, move focus to the streamlit tab, t
 
 You also need to have access to GPT API to use this package. Alternatively, you need access to Gemini API but that requires changes to the [.streamlit/secrets.toml](.streamlit/secrets.toml) file (see below).
 
-
-Or, if you prefer not to set up the platform locally, you can use the already deployed version of the app on Streamlit Cloud, available here:
-https://wordalisations-sn.streamlit.app/
 
 ## How does it work?
 ### App

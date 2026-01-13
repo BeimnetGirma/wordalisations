@@ -50,10 +50,10 @@ st.write(
     "This app can only handle three or four users at a time. Please [download](https://github.com/soccermatics/twelve-gpt-educational) and run on your own computer with your own Gemini key."
 )
 
-# Read in model card text
-with open("model cards/model-card-wvs-chat.md", "r", encoding="utf8") as file:
+# Read in prompt card text
+with open("prompt cards/prompt-card-wvs-chat.md", "r", encoding="utf8") as file:
     # Read the contents of the file
-    model_card_text = file.read()
+    prompt_card_text = file.read()
 
 ####
 import base64
@@ -93,13 +93,13 @@ def replace_images_in_text(text):
 
 
 # Process the text with image replacements
-processed_text = replace_images_in_text(model_card_text)
+processed_text = replace_images_in_text(prompt_card_text)
 
 ####
 
-load_css("model cards/style/python-code.css")
-st.expander("Model card", expanded=False).markdown(
-    processed_text,  # model_card_text,
+load_css("prompt cards/style/python-code.css")
+st.expander("Prompt card", expanded=False).markdown(
+    processed_text,  # prompt_card_text,
     unsafe_allow_html=True,
 )
 

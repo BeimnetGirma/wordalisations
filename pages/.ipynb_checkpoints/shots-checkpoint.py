@@ -134,13 +134,13 @@ if not selected_shot.empty:
 else:
     st.warning("No matching shot found.")
 
-# Read in model card text
-with open("model cards/model-card-shot-xG-analysis.md", "r") as file:
+# Read in prompt card text
+with open("prompt cards/prompt-card-shot-xG-analysis.md", "r") as file:
      # Read the contents of the file
-    model_card_text = file.read()
+    prompt_card_text = file.read()
 
-load_css("model cards/style/python-code.css")
-st.expander("Model card", expanded=False).markdown(model_card_text)
+load_css("prompt cards/style/python-code.css")
+st.expander("Prompt card", expanded=False).markdown(prompt_card_text)
 
 #st.markdown("#### Selected Shot Data")
 #shot = shots_df[shots_df['id']== shot_id]
