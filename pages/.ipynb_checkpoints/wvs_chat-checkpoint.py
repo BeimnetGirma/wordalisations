@@ -97,7 +97,7 @@ processed_text = replace_images_in_text(prompt_card_text)
 
 ####
 
-load_css("prompt cards/style/python-code.css")
+load_css("Prompt Cards/style/python-code.css")
 st.expander("Prompt card", expanded=False).markdown(
     processed_text,  # prompt_card_text,
     unsafe_allow_html=True,
