@@ -90,13 +90,12 @@ st.write(
     "This app can only handle three or four users at a time. Please [download](https://github.com/soccermatics/twelve-gpt-educational) and run on your own computer with your own Gemini key."
 )
 
-# Read in model card text
-with open("model cards/model-card-football-scout.md", "r", encoding="utf8") as file:
+# Read in prompt card text
+with open("prompt cards/prompt-card-football-scout.md", "r", encoding="utf8") as file:
     # Read the contents of the file
-    model_card_text = file.read()
+    prompt_card_text = file.read()
 
-
-st.expander("Model card for Football Scout", expanded=False).markdown(model_card_text)
+st.expander("Prompt card for Football Scout", expanded=False).markdown(prompt_card_text)
 
 st.expander("Dataframe used", expanded=False).write(players.df)
 
