@@ -135,11 +135,11 @@ else:
     st.warning("No matching shot found.")
 
 # Read in prompt card text
-with open("prompt cards/prompt-card-shot-xG-analysis.md", "r") as file:
+with open("Prompt Cards/prompt-card-shot-xG-analysis.md", "r") as file:
      # Read the contents of the file
     prompt_card_text = file.read()
 
-load_css("prompt cards/style/python-code.css")
+load_css("Prompt Cards/style/python-code.css")
 st.expander("Prompt card", expanded=False).markdown(prompt_card_text)
 
 #st.markdown("#### Selected Shot Data")

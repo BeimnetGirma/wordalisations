@@ -91,7 +91,7 @@ st.write(
 )
 
 # Read in prompt card text
-with open("prompt cards/prompt-card-football-scout.md", "r", encoding="utf8") as file:
+with open("Prompt Cards/prompt-card-football-scout.md", "r", encoding="utf8") as file:
     # Read the contents of the file
     prompt_card_text = file.read()
 
